@@ -734,6 +734,8 @@ select {
   padding: 14px 15px;
   position: relative;
   opacity: 0;
+  transition: opacity 0.45s ease, transform 0.45s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  transition-delay: calc(0.28s + (var(--step-index) * 0.24s));
   z-index: 1;
 }
 
@@ -758,7 +760,6 @@ select {
 
 .is-visible .workflow-step {
   opacity: 1;
-  transition-delay: calc(0.22s + (var(--step-index) * 0.22s));
 }
 
 .is-visible .workflow-step:nth-of-type(odd) {
