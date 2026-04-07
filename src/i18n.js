@@ -62,26 +62,62 @@ export const translations = {
     },
     projects: {
       eyebrow: "Selected work",
-      title: "Replace these with your strongest freelance projects",
-      copy: "Use three to six case studies with results, stack, client context, and live links when available.",
+      title: "Real projects built across AI, dashboards, marketplaces, and booking systems",
+      copy: "A curated timeline of my strongest work, from an award-winning smart agriculture platform to production freelance products.",
+      showMore: "Show more",
+      showLess: "Show less",
+      stackLabel: "Project technologies",
       items: [
         {
-          type: "SaaS dashboard",
-          title: "Operations analytics platform",
-          stack: "React, Node.js, MongoDB, CI/CD",
-          image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=900&q=80"
+          type: "Award-winning smart agriculture",
+          year: "2023",
+          title: "Agricole",
+          badge: "Best Full Stack JavaScript Project - Bal des Projets 2023",
+          description:
+            "Agricole is a modern smart-farming platform built for intelligent land management. It includes a dashboard for field statistics such as temperature, humidity, sensor readings, and farmer objectives, connected to Arduino Uno sensors. The platform also includes a marketplace to sell or rent agricultural equipment and field products, an AI optimization module that receives a land schema and recommends the required equipment count and placement to reduce cost using KNN and SVM, image recognition to identify plants and return useful descriptions, and facial-recognition login designed to make access easier for older farmers.",
+          technologies: ["React.js", "Node.js", "MongoDB", "Arduino Uno", "KNN", "SVM", "AI Vision", "Face Recognition"],
+          image: "/projects/agricole-certificate.jpg",
+          links: [
+            {
+              label: "Watch scenario",
+              href: "https://youtube.com/watch?v=PdE9L7UQRMg&feature=share&fbclid=IwY2xjawRCXsdleHRuA2FlbQIxMQBzcnRjBmFwcF9pZBAyMjIwMzkxNzg4MjAwODkyAAEenNBgWUydAF1NfY6YFRvfBHnXjSQXqN1tpuw9i22bgtEBeHIdTuXM2PxGtp4_aem_Z-oNaPVL8eE0ancQYiJR5w"
+            },
+            { label: "Award proof", href: "/projects/agricole-attestation.pdf" }
+          ]
         },
         {
-          type: "Business website",
-          title: "Conversion-focused company site",
-          stack: "WordPress, Laravel, SQL",
-          image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=900&q=80"
+          type: "PFE / Intelligent dashboard",
+          year: "2024",
+          title: "Save Your Wardrobe",
+          badge: "Federated analytics and anomaly detection",
+          description:
+            "During my PFE at Save Your Wardrobe, I created an intelligent dashboard connected to a federated database that groups data from multiple websites at the same time. I integrated an AI model to detect anomalies in orders and added advanced dashboard features such as saved views, grouped status filters, and multi-filter workflows to make operational analysis faster and more reliable.",
+          technologies: ["NestJS", "React.js", "MongoDB", "Flask", "Python", "AI Anomaly Detection", "Federated Database"],
+          image: "/projects/save-your-wardrobe.avif",
+          links: []
         },
         {
-          type: "Client platform",
-          title: "Secure booking workflow",
-          stack: "Angular, Spring Boot, SQL",
-          image: "https://images.unsplash.com/photo-1551434678-e076c223a692?auto=format&fit=crop&w=900&q=80"
+          type: "Import/export business platform",
+          year: "2025",
+          title: "Tragana United",
+          badge: "Live production website",
+          description:
+            "Tragana United is an import/export website for heavy machinery targeting construction and Gulf-region clients. The website presents available machines, lets users compose a machine request, sends a quote workflow and confirmation email, includes a contact section for direct company communication, and adds a chatbot to improve UX and guide visitors through the platform. The website supports Arabic and English for its target market.",
+          technologies: ["React.js", "Vite", "Node.js", "MongoDB", "Chatbot", "Email Workflow", "Multilingual"],
+          image: "/projects/tragana-united.mp4",
+          mediaType: "video",
+          links: [{ label: "Visit website", href: "https://tragana-united.com/" }]
+        },
+        {
+          type: "Booking and event platform",
+          year: "2025",
+          title: "Tata-Islem",
+          badge: "Reservations, payments, invoices, and admin workflow",
+          description:
+            "Tata-Islem is a booking platform for services and events with online PayPal payment. After reservation, users receive a confirmation email, an automatically generated invoice, and an event ticket. The platform includes a chatbot to improve navigation, a contact section for the admin, a dynamic dashboard, automatic Meet link generation after booking a service, a calendar for appointment management, and a full user/admin workflow to organize reservation dates, services, and events.",
+          technologies: ["React.js", "Vite", "Node.js", "MongoDB", "PayPal", "Chatbot", "Calendar", "Email Automation"],
+          image: "/projects/tata-islem-logo.jpeg",
+          links: [{ label: "Visit website", href: "https://tata-islem.com/" }]
         }
       ]
     },

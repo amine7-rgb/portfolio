@@ -73,6 +73,7 @@ function App() {
   const [toast, setToast] = useState(null);
   const [activeSection, setActiveSection] = useState("home");
   const [contactDockOpen, setContactDockOpen] = useState(false);
+  const [expandedProjects, setExpandedProjects] = useState({});
   const t = translations[language];
   const typedRole = useTyping(t.hero.roles);
   const isRtl = language === "ar";
@@ -138,7 +139,13 @@ function App() {
     return () => clearTimeout(timer);
   }, [toast]);
 
-  const projectCards = useMemo(() => t.projects.items, [t.projects.items]);
+  const projectCards = useMemo(() => {
+    const items = t.projects.items || [];
+    return items.some((project) => project.technologies) ? items : translations.en.projects.items;
+  }, [t.projects.items]);
+  const toggleProject = (title) => {
+    setExpandedProjects((current) => ({ ...current, [title]: !current[title] }));
+  };
 
   const handleChange = (event) => {
     setForm((current) => ({ ...current, [event.target.name]: event.target.value }));
@@ -296,13 +303,38 @@ function App() {
             <p>{t.projects.copy}</p>
           </div>
           <div className="project-grid">
-            {projectCards.map((project) => (
-              <article className="project-card" key={project.title}>
-                <img src={project.image} alt="" loading="lazy" />
-                <div>
-                  <p>{project.type}</p>
+            {projectCards.map((project, index) => (
+              <article className={`project-card case-study-card ${index === 0 ? "featured" : ""}`} key={project.title}>
+                <div className="project-media">
+                  {project.mediaType === "video" ? (
+                    <video src={project.image} autoPlay muted loop playsInline aria-label={project.title} />
+                  ) : (
+                    <img src={project.image} alt={project.title} loading="lazy" />
+                  )}
+                  {project.year && <span className="project-year">{project.year}</span>}
+                </div>
+                <div className="project-body">
+                  <p className="project-type">{project.type}</p>
                   <h3>{project.title}</h3>
-                  <span>{project.stack}</span>
+                  {project.badge && <strong className="project-badge">{project.badge}</strong>}
+                  <p className={`project-description ${expandedProjects[project.title] ? "expanded" : ""}`}>
+                    {project.description || project.stack}
+                  </p>
+                  <button className="show-more-button" type="button" onClick={() => toggleProject(project.title)}>
+                    {expandedProjects[project.title] ? t.projects.showLess || "Show less" : t.projects.showMore || "Show more"}
+                  </button>
+                  <div className="tech-pills" aria-label={t.projects.stackLabel}>
+                    {(project.technologies || project.stack?.split(", ") || []).map((tech) => (
+                      <span key={tech}>{tech}</span>
+                    ))}
+                  </div>
+                  <div className="project-actions">
+                    {project.links?.map((link) => (
+                      <a href={link.href} key={link.href} target="_blank" rel="noreferrer">
+                        {link.label}
+                      </a>
+                    ))}
+                  </div>
                 </div>
               </article>
             ))}
