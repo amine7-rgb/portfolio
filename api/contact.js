@@ -1,8 +1,9 @@
 import mongoose from "mongoose";
 import nodemailer from "nodemailer";
 
-const mongoUri = process.env.MONGODB_URI;
-const contactToEmail = process.env.CONTACT_TO_EMAIL || "amed14170@gmail.com";
+const env = (key, fallback = "") => (process.env[key] || fallback).trim();
+const mongoUri = env("MONGODB_URI");
+const contactToEmail = env("CONTACT_TO_EMAIL", "amed14170@gmail.com");
 
 const contactSchema = new mongoose.Schema(
   {
@@ -35,7 +36,11 @@ const connectMongo = async () => {
 };
 
 const createMailer = () => {
-  const { SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASS } = process.env;
+  const SMTP_HOST = env("SMTP_HOST");
+  const SMTP_PORT = env("SMTP_PORT");
+  const SMTP_SECURE = env("SMTP_SECURE");
+  const SMTP_USER = env("SMTP_USER");
+  const SMTP_PASS = env("SMTP_PASS");
 
   if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS) {
     return null;
@@ -108,13 +113,25 @@ const formatContactHtml = ({ name, email, company, budget, message }) => {
 </html>`;
 };
 
+const parseBody = (body) => {
+  if (!body || typeof body === "object") {
+    return body || {};
+  }
+
+  try {
+    return JSON.parse(body);
+  } catch {
+    return {};
+  }
+};
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed." });
   }
 
   try {
-    const { name, email, company, budget, message } = req.body || {};
+    const { name, email, company, budget, message } = parseBody(req.body);
 
     if (!name || !email || !message) {
       return res.status(400).json({ error: "Name, email, and message are required." });
@@ -125,30 +142,43 @@ export default async function handler(req, res) {
     }
 
     let contact = null;
+    let delivered = false;
+    const errors = [];
 
     if (mongoUri) {
-      await connectMongo();
-      contact = await Contact.create({ name, email, company, budget, message });
+      try {
+        await connectMongo();
+        contact = await Contact.create({ name, email, company, budget, message });
+      } catch (error) {
+        console.error("MongoDB save failed", error);
+        errors.push("mongodb");
+      }
     }
 
     const mailer = createMailer();
 
     if (mailer) {
-      await mailer.sendMail({
-        from: `"Portfolio Contact" <${process.env.SMTP_USER}>`,
-        replyTo: email,
-        to: contactToEmail,
-        subject: `New portfolio message from ${name}`,
-        text: formatContactText({ name, email, company, budget, message }),
-        html: formatContactHtml({ name, email, company, budget, message })
-      });
+      try {
+        await mailer.sendMail({
+          from: `"Portfolio Contact" <${env("SMTP_USER")}>`,
+          replyTo: email,
+          to: contactToEmail,
+          subject: `New portfolio message from ${name}`,
+          text: formatContactText({ name, email, company, budget, message }),
+          html: formatContactHtml({ name, email, company, budget, message })
+        });
+        delivered = true;
+      } catch (error) {
+        console.error("SMTP delivery failed", error);
+        errors.push("smtp");
+      }
     }
 
-    if (!contact && !mailer) {
-      return res.status(503).json({ error: "Contact service is not configured." });
+    if (!contact && !delivered) {
+      return res.status(500).json({ error: "Contact service failed.", services: errors });
     }
 
-    return res.status(201).json({ ok: true, id: contact?._id || null });
+    return res.status(201).json({ ok: true, id: contact?._id || null, delivered });
   } catch (error) {
     console.error("Contact submission failed", error);
     return res.status(500).json({ error: "Unable to send your message right now." });
