@@ -8,7 +8,7 @@ const heroImages = [
 ];
 
 const profileLinks = {
-  email: "amine@example.com",
+  email: "amed14170@gmail.com",
   github: "https://github.com/amine7-rgb",
   linkedin: "https://www.linkedin.com"
 };
