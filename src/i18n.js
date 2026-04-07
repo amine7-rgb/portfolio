@@ -16,8 +16,8 @@ export const translations = {
       aria: "Portfolio hero",
       eyebrow: "Freelance web engineer",
       title: "I build fast, reliable web products with ",
-      roles: ["React and Node.js", "MongoDB backends", "CI/CD pipelines", "Laravel and WordPress"],
-      copy: "From idea to deployment, I help founders and teams ship clean platforms, dashboards, storefronts, and business tools.",
+      roles: ["React and Node.js", "AI chatbots", "MongoDB backends", "CI/CD pipelines", "Laravel and WordPress"],
+      copy: "From idea to deployment, I help founders and teams ship clean platforms, dashboards, AI assistants, storefronts, and business tools.",
       primary: "Start a project",
       secondary: "View selected work",
       metricsLabel: "Professional highlights",
@@ -51,14 +51,14 @@ export const translations = {
         },
         {
           kicker: "04",
-          title: "DevOps foundations",
-          copy: "CI/CD pipelines, environment setup, deployment checks, and production-minded release flow."
+          title: "AI and automation",
+          copy: "AI models, chatbots, smart workflows, and business automation connected to polished web products."
         }
       ]
     },
     stack: {
       eyebrow: "Technical stack",
-      title: "Tools I use to ship dependable web systems"
+      title: "Tools I use to ship dependable web and AI systems"
     },
     projects: {
       eyebrow: "Selected work",
@@ -108,7 +108,19 @@ export const translations = {
       submit: "Send message",
       sending: "Sending...",
       success: "Message sent. I will get back to you soon.",
-      error: "Message could not be sent. Check the API and MongoDB connection."
+      error: "Message could not be sent. Check the API and MongoDB connection.",
+      closeToast: "Close notification"
+    },
+    footer: {
+      name: "Mohamed Amine Oudi",
+      copy: "Freelance full-stack engineer for web platforms, automation, AI chatbots, and deployment-ready products.",
+      linksLabel: "Footer contact links",
+      links: {
+        email: "Email",
+        linkedin: "LinkedIn",
+        github: "GitHub"
+      },
+      copyright: "Copyright 2026 Mohamed Amine Oudi. All rights reserved."
     }
   },
   ar: {
@@ -221,6 +233,17 @@ export const translations = {
       sending: "جار الإرسال...",
       success: "تم إرسال الرسالة. سأعود إليك قريبا.",
       error: "تعذر إرسال الرسالة. تحقق من API واتصال MongoDB."
+    },
+    footer: {
+      name: "Mohamed Amine Oudi",
+      copy: "Freelance full-stack engineer for web platforms, automation, AI chatbots, and deployment-ready products.",
+      linksLabel: "Footer contact links",
+      links: {
+        email: "Email",
+        linkedin: "LinkedIn",
+        github: "GitHub"
+      },
+      copyright: "Copyright 2026 Mohamed Amine Oudi. All rights reserved."
     }
   }
 };

@@ -13,7 +13,25 @@ const profileLinks = {
   linkedin: "https://www.linkedin.com/in/mohamedamine-eloudi-aa47b6198/"
 };
 
-const stacks = ["Node.js", "React.js", "MongoDB", "Angular", "Spring Boot", "Laravel", "WordPress", "SQL", "CI/CD"];
+const stacks = [
+  "Node.js",
+  "React.js",
+  "MongoDB",
+  "Angular",
+  "Spring Boot",
+  "Laravel",
+  "WordPress",
+  "SQL",
+  "CI/CD",
+  "AI Models",
+  "Chatbots"
+];
+
+const footerLinks = [
+  { key: "email", href: `mailto:${profileLinks.email}`, icon: "@" },
+  { key: "linkedin", href: profileLinks.linkedin, icon: "in" },
+  { key: "github", href: profileLinks.github, icon: "gh" }
+];
 
 function useTyping(words, speed = 70, pause = 1200) {
   const [wordIndex, setWordIndex] = useState(0);
@@ -52,7 +70,8 @@ function App() {
   const [theme, setTheme] = useState("dark");
   const [slide, setSlide] = useState(0);
   const [form, setForm] = useState({ name: "", email: "", company: "", budget: "", message: "" });
-  const [formStatus, setFormStatus] = useState("");
+  const [toast, setToast] = useState(null);
+  const [activeSection, setActiveSection] = useState("home");
   const t = translations[language];
   const typedRole = useTyping(t.hero.roles);
   const isRtl = language === "ar";
@@ -72,6 +91,52 @@ function App() {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    const sectionIds = ["home", ...t.nav.links.map((link) => link.href.replace("#", ""))];
+    const sections = sectionIds.map((id) => document.getElementById(id)).filter(Boolean);
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id);
+            entry.target.classList.add("is-visible");
+          }
+        });
+      },
+      { rootMargin: "-35% 0px -55% 0px", threshold: 0.01 }
+    );
+
+    const revealObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            revealObserver.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.16 }
+    );
+
+    sections.forEach((section) => observer.observe(section));
+    document.querySelectorAll(".reveal").forEach((element) => revealObserver.observe(element));
+
+    return () => {
+      observer.disconnect();
+      revealObserver.disconnect();
+    };
+  }, [t.nav.links]);
+
+  useEffect(() => {
+    if (!toast) {
+      return undefined;
+    }
+
+    const timer = setTimeout(() => setToast(null), 4200);
+    return () => clearTimeout(timer);
+  }, [toast]);
+
   const projectCards = useMemo(() => t.projects.items, [t.projects.items]);
 
   const handleChange = (event) => {
@@ -80,7 +145,7 @@ function App() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setFormStatus(t.contact.sending);
+    setToast({ type: "info", message: t.contact.sending });
 
     try {
       const response = await fetch("/api/contact", {
@@ -94,9 +159,9 @@ function App() {
       }
 
       setForm({ name: "", email: "", company: "", budget: "", message: "" });
-      setFormStatus(t.contact.success);
+      setToast({ type: "success", message: t.contact.success });
     } catch {
-      setFormStatus(t.contact.error);
+      setToast({ type: "error", message: t.contact.error });
     }
   };
 
@@ -104,11 +169,17 @@ function App() {
     <div className={`site ${theme}`} dir={isRtl ? "rtl" : "ltr"}>
       <header className="nav">
         <a href="#home" className="brand" aria-label="Amine portfolio home">
-          Amine
+          <span className="logo-mark">MA</span>
+          <span>Amine</span>
         </a>
         <nav className="nav-links" aria-label={t.nav.label}>
           {t.nav.links.map((link) => (
-            <a key={link.href} href={link.href}>
+            <a
+              key={link.href}
+              href={link.href}
+              className={activeSection === link.href.replace("#", "") ? "active" : ""}
+              aria-current={activeSection === link.href.replace("#", "") ? "page" : undefined}
+            >
               {link.label}
             </a>
           ))}
@@ -130,7 +201,7 @@ function App() {
           style={{ "--hero-image": `url(${currentHeroImage})` }}
           aria-label={t.hero.aria}
         >
-          <div className="hero-overlay">
+          <div className="hero-overlay reveal is-visible">
             <p className="eyebrow">{t.hero.eyebrow}</p>
             <h1>
               {t.hero.title}
@@ -167,7 +238,7 @@ function App() {
           </div>
         </section>
 
-        <section id="services" className="section">
+        <section id="services" className="section reveal">
           <div className="section-heading">
             <p className="eyebrow">{t.services.eyebrow}</p>
             <h2>{t.services.title}</h2>
@@ -184,7 +255,7 @@ function App() {
           </div>
         </section>
 
-        <section id="stack" className="section compact">
+        <section id="stack" className="section compact reveal">
           <div className="section-heading">
             <p className="eyebrow">{t.stack.eyebrow}</p>
             <h2>{t.stack.title}</h2>
@@ -196,7 +267,7 @@ function App() {
           </div>
         </section>
 
-        <section id="projects" className="section">
+        <section id="projects" className="section reveal">
           <div className="section-heading">
             <p className="eyebrow">{t.projects.eyebrow}</p>
             <h2>{t.projects.title}</h2>
@@ -216,7 +287,7 @@ function App() {
           </div>
         </section>
 
-        <section id="process" className="section compact">
+        <section id="process" className="section compact reveal">
           <div className="section-heading">
             <p className="eyebrow">{t.process.eyebrow}</p>
             <h2>{t.process.title}</h2>
@@ -234,20 +305,11 @@ function App() {
           </div>
         </section>
 
-        <section id="contact" className="section contact-section">
+        <section id="contact" className="section contact-section reveal">
           <div className="contact-copy">
             <p className="eyebrow">{t.contact.eyebrow}</p>
             <h2>{t.contact.title}</h2>
             <p>{t.contact.copy}</p>
-            <div className="contact-links">
-              <a href={`mailto:${profileLinks.email}`}>{profileLinks.email}</a>
-              <a href={profileLinks.linkedin} target="_blank" rel="noreferrer">
-                LinkedIn
-              </a>
-              <a href={profileLinks.github} target="_blank" rel="noreferrer">
-                GitHub
-              </a>
-            </div>
           </div>
           <form className="contact-form" onSubmit={handleSubmit}>
             <label>
@@ -277,13 +339,47 @@ function App() {
               {t.contact.message}
               <textarea name="message" rows="5" value={form.message} onChange={handleChange} required />
             </label>
-            <button className="primary-button wide" type="submit">
-              {t.contact.submit}
-            </button>
-            {formStatus && <p className="form-status">{formStatus}</p>}
+            <div className="form-actions wide">
+              <button className="primary-button contact-submit" type="submit">
+                {t.contact.submit}
+              </button>
+            </div>
           </form>
         </section>
       </main>
+      <footer className="footer reveal">
+        <div className="footer-main">
+          <div className="footer-brand">
+            <a href="#home" className="footer-logo" aria-label="Mohamed Amine Oudi home">
+              <span className="logo-mark logo-mark-large">MA</span>
+            </a>
+            <div>
+              <h2>{t.footer.name}</h2>
+              <p>{t.footer.copy}</p>
+            </div>
+          </div>
+          <div className="footer-links" aria-label={t.footer.linksLabel}>
+            {footerLinks.map((link) => (
+              <a key={link.key} href={link.href} target={link.key === "email" ? undefined : "_blank"} rel="noreferrer">
+                <span>{link.icon}</span>
+                {t.footer.links[link.key]}
+              </a>
+            ))}
+          </div>
+        </div>
+        <div className="footer-bottom">
+          <p>{t.footer.copyright}</p>
+        </div>
+      </footer>
+      {toast && (
+        <div className={`toast ${toast.type}`} role="status" aria-live="polite">
+          <span />
+          <p>{toast.message}</p>
+          <button type="button" aria-label={t.contact.closeToast || "Close notification"} onClick={() => setToast(null)}>
+            x
+          </button>
+        </div>
+      )}
     </div>
   );
 }

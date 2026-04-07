@@ -1,5 +1,5 @@
 :root {
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: "Plus Jakarta Sans", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color-scheme: dark;
   font-size: 16px;
 }
@@ -27,6 +27,29 @@ input,
 textarea,
 select {
   font: inherit;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .site {
@@ -71,12 +94,46 @@ select {
   top: 0;
   z-index: 10;
   backdrop-filter: blur(16px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
 }
 
 .brand {
+  align-items: center;
   color: var(--text);
+  display: inline-flex;
   font-size: 1.1rem;
   font-weight: 800;
+  gap: 10px;
+}
+
+.logo-mark {
+  align-items: center;
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  border: 1px solid color-mix(in srgb, #ffffff 34%, transparent);
+  border-radius: 8px;
+  box-shadow: 0 14px 30px rgba(0, 194, 168, 0.2);
+  color: var(--button-text);
+  display: inline-flex;
+  font-size: 0.82rem;
+  font-weight: 900;
+  height: 36px;
+  justify-content: center;
+  position: relative;
+  width: 36px;
+}
+
+.logo-mark::after {
+  border: 1px solid rgba(255, 255, 255, 0.54);
+  border-radius: 6px;
+  content: "";
+  inset: 5px;
+  position: absolute;
+}
+
+.logo-mark-large {
+  font-size: 1.08rem;
+  height: 58px;
+  width: 58px;
 }
 
 .nav-links,
@@ -91,11 +148,22 @@ select {
 .nav-links {
   color: var(--muted);
   font-size: 0.94rem;
+  gap: 8px;
+}
+
+.nav-links a {
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 9px 12px;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 
 .nav-links a:hover,
-.contact-links a:hover {
+.nav-links a.active {
+  background: color-mix(in srgb, var(--accent) 13%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 44%, transparent);
   color: var(--accent);
+  transform: translateY(-1px);
 }
 
 .ghost-button,
@@ -106,12 +174,20 @@ select {
   font-weight: 800;
   min-height: 42px;
   padding: 10px 16px;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .ghost-button {
-  background: transparent;
+  background: color-mix(in srgb, var(--surface) 68%, transparent);
   border: 1px solid var(--line);
   color: var(--text);
+}
+
+.ghost-button:hover {
+  border-color: color-mix(in srgb, var(--accent) 54%, transparent);
+  box-shadow: 0 10px 24px rgba(0, 194, 168, 0.15);
+  color: var(--accent);
+  transform: translateY(-1px);
 }
 
 .primary-button {
@@ -123,6 +199,13 @@ select {
   justify-content: center;
 }
 
+.primary-button:hover {
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+  box-shadow: 0 16px 36px rgba(0, 194, 168, 0.22);
+  transform: translateY(-2px);
+}
+
 .secondary-button {
   align-items: center;
   background: rgba(255, 255, 255, 0.08);
@@ -130,6 +213,11 @@ select {
   color: #ffffff;
   display: inline-flex;
   justify-content: center;
+}
+
+.secondary-button:hover {
+  background: rgba(255, 255, 255, 0.16);
+  transform: translateY(-2px);
 }
 
 .hero {
@@ -278,6 +366,17 @@ select {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 8px;
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.12);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.panel:hover,
+.project-card:hover,
+.timeline article:hover,
+.contact-form:hover {
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--line));
+  box-shadow: 0 22px 58px rgba(0, 0, 0, 0.2);
+  transform: translateY(-6px);
 }
 
 .panel {
@@ -308,6 +407,14 @@ select {
   color: var(--text);
   font-weight: 800;
   padding: 13px 16px;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.stack-list span:hover {
+  background: color-mix(in srgb, var(--accent) 14%, var(--panel));
+  border-color: color-mix(in srgb, var(--accent) 44%, var(--line));
+  color: var(--accent);
+  transform: translateY(-3px);
 }
 
 .project-grid {
@@ -323,6 +430,11 @@ select {
   display: block;
   object-fit: cover;
   width: 100%;
+  transition: transform 0.5s ease;
+}
+
+.project-card:hover img {
+  transform: scale(1.06);
 }
 
 .project-card div {
@@ -408,10 +520,165 @@ select {
   grid-column: 1 / -1;
 }
 
-.form-status {
-  color: var(--muted);
+.form-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.contact-submit {
+  min-width: 190px;
+  width: auto;
+}
+
+.footer {
+  background: #061017;
+  border-top: 1px solid var(--line);
+  color: #f3f8fb;
+  padding: 46px clamp(18px, 5vw, 84px) 0;
+}
+
+.footer-main {
+  align-items: start;
+  display: grid;
+  gap: 28px;
+  grid-template-columns: 1fr auto;
+  padding-bottom: 34px;
+}
+
+.footer-brand {
+  align-items: center;
+  display: flex;
+  gap: 18px;
+  max-width: 660px;
+}
+
+.footer-logo {
+  align-items: center;
+  background: transparent;
+  border-radius: 8px;
+  display: inline-flex;
+  flex: 0 0 58px;
+  height: 58px;
+  justify-content: center;
+  padding: 0;
+  width: 58px;
+}
+
+.footer-brand h2 {
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  margin: 0 0 8px;
+}
+
+.footer-brand p {
+  color: #a9bdc9;
+  line-height: 1.75;
+  margin: 0;
+}
+
+.footer-links {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+  min-width: 180px;
+  padding: 14px;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.18);
+}
+
+.footer-links a {
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  color: #d9e7ed;
+  display: flex;
+  gap: 10px;
+  padding: 12px 14px;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.footer-links a:hover {
+  background: rgba(0, 194, 168, 0.12);
+  border-color: rgba(0, 194, 168, 0.5);
+  color: #54f0d8;
+  transform: translateX(-3px);
+}
+
+.footer-links span {
+  align-items: center;
+  background: rgba(0, 194, 168, 0.14);
+  border-radius: 8px;
+  color: #54f0d8;
+  display: inline-flex;
+  font-size: 0.78rem;
+  font-weight: 900;
+  height: 30px;
+  justify-content: center;
+  width: 30px;
+}
+
+.footer-bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  color: #a9bdc9;
+  font-size: 0.92rem;
+  padding: 18px 0;
+  text-align: center;
+}
+
+.footer-bottom p {
+  margin: 0;
+}
+
+.toast {
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  bottom: 24px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.32);
+  color: var(--text);
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 12px minmax(0, 1fr) auto;
+  max-width: min(420px, calc(100vw - 36px));
+  padding: 14px 16px;
+  position: fixed;
+  right: 24px;
+  z-index: 30;
+  animation: fadeUp 0.35s ease both;
+}
+
+.toast > span {
+  background: var(--accent);
+  border-radius: 999px;
+  height: 12px;
+  width: 12px;
+}
+
+.toast.error > span {
+  background: #ff6b6b;
+}
+
+.toast.info > span {
+  background: var(--accent-strong);
+}
+
+.toast p {
   grid-column: 1 / -1;
   margin: 0;
+}
+
+.toast p {
+  grid-column: auto;
+}
+
+.toast button {
+  background: transparent;
+  border: 0;
+  color: var(--muted);
+  cursor: pointer;
+  font-weight: 900;
+  padding: 4px;
 }
 
 [dir="rtl"] .hero {
@@ -433,7 +700,8 @@ select {
 
   .service-grid,
   .project-grid,
-  .contact-section {
+  .contact-section,
+  .footer-main {
     grid-template-columns: 1fr;
   }
 
@@ -477,6 +745,21 @@ select {
 
   .contact-form {
     grid-template-columns: 1fr;
+  }
+
+  .contact-submit {
+    width: 100%;
+  }
+
+  .footer-brand {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .toast {
+    bottom: 16px;
+    left: 18px;
+    right: 18px;
   }
 
   .timeline article {
