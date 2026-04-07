@@ -17,6 +17,23 @@ mongodb://127.0.0.1:27017/amine_portfolio
 
 To use another database, copy `.env.example` to `.env` and update `MONGODB_URI`.
 
+## Contact Email
+
+The contact form saves messages to MongoDB and can send them to your Gmail inbox.
+
+Create a `.env` file from `.env.example`, then set:
+
+```bash
+CONTACT_TO_EMAIL=amed14170@gmail.com
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=465
+SMTP_SECURE=true
+SMTP_USER=amed14170@gmail.com
+SMTP_PASS=your_gmail_app_password
+```
+
+For Gmail, `SMTP_PASS` should be a Google App Password, not your normal Gmail password.
+
 ## Build
 
 ```bash

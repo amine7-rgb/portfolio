@@ -10,7 +10,7 @@ const heroImages = [
 const profileLinks = {
   email: "amed14170@gmail.com",
   github: "https://github.com/amine7-rgb",
-  linkedin: "https://www.linkedin.com"
+  linkedin: "https://www.linkedin.com/in/mohamedamine-eloudi-aa47b6198/"
 };
 
 const stacks = ["Node.js", "React.js", "MongoDB", "Angular", "Spring Boot", "Laravel", "WordPress", "SQL", "CI/CD"];

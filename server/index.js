@@ -5,6 +5,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import mongoose from "mongoose";
+import nodemailer from "nodemailer";
 
 dotenv.config();
 
@@ -12,6 +13,7 @@ const app = express();
 const port = process.env.PORT || 5000;
 const clientOrigin = process.env.CLIENT_ORIGIN || "http://localhost:5173";
 const mongoUri = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/amine_portfolio";
+const contactToEmail = process.env.CONTACT_TO_EMAIL || "amed14170@gmail.com";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const distPath = path.resolve(__dirname, "../dist");
 
@@ -34,6 +36,36 @@ const Contact = mongoose.model("Contact", contactSchema);
 
 const isEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
+const createMailer = () => {
+  const { SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASS } = process.env;
+
+  if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS) {
+    return null;
+  }
+
+  return nodemailer.createTransport({
+    host: SMTP_HOST,
+    port: Number(SMTP_PORT),
+    secure: SMTP_SECURE === "true",
+    auth: {
+      user: SMTP_USER,
+      pass: SMTP_PASS
+    }
+  });
+};
+
+const formatContactEmail = ({ name, email, company, budget, message }) => `
+New portfolio contact request
+
+Name: ${name}
+Email: ${email}
+Company: ${company || "Not provided"}
+Budget: ${budget || "Not selected"}
+
+Message:
+${message}
+`;
+
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true, service: "amine-portfolio-api" });
 });
@@ -51,6 +83,20 @@ app.post("/api/contact", async (req, res) => {
     }
 
     const contact = await Contact.create({ name, email, company, budget, message });
+    const mailer = createMailer();
+
+    if (mailer) {
+      await mailer.sendMail({
+        from: `"Portfolio Contact" <${process.env.SMTP_USER}>`,
+        replyTo: email,
+        to: contactToEmail,
+        subject: `New portfolio message from ${name}`,
+        text: formatContactEmail({ name, email, company, budget, message })
+      });
+    } else {
+      console.warn("SMTP is not configured. Message was saved to MongoDB but no email was sent.");
+    }
+
     res.status(201).json({ ok: true, id: contact._id });
   } catch (error) {
     console.error("Contact submission failed", error);
