@@ -405,6 +405,7 @@ function App() {
       </footer>
       <div
         className={`contact-dock ${contactDockOpen ? "open" : ""}`}
+        onMouseEnter={() => setContactDockOpen(true)}
         onMouseLeave={() => setContactDockOpen(false)}
         aria-label={t.footer.linksLabel}
       >
@@ -418,6 +419,8 @@ function App() {
               target={link.key === "email" ? undefined : "_blank"}
               rel="noreferrer"
               aria-label={t.footer.links[link.key]}
+              onMouseEnter={() => setContactDockOpen(true)}
+              onFocus={() => setContactDockOpen(true)}
             >
               <span aria-hidden="true" />
               <small>{t.footer.links[link.key]}</small>

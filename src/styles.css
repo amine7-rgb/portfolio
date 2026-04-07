@@ -1011,7 +1011,9 @@ select {
 
 .dock-toggle:hover,
 .contact-dock.open .dock-toggle,
-.contact-dock:focus-within .dock-toggle {
+.contact-dock:focus-within .dock-toggle,
+.contact-dock:has(.dock-link:hover) .dock-toggle,
+.contact-dock:has(.dock-link:focus-visible) .dock-toggle {
   box-shadow:
     0 30px 78px rgba(0, 194, 168, 0.4),
     0 0 0 8px rgba(0, 194, 168, 0.08),
@@ -1033,7 +1035,9 @@ select {
 
 .dock-toggle:hover .dock-face,
 .contact-dock.open .dock-face,
-.contact-dock:focus-within .dock-face {
+.contact-dock:focus-within .dock-face,
+.contact-dock:has(.dock-link:hover) .dock-face,
+.contact-dock:has(.dock-link:focus-visible) .dock-face {
   bottom: 9px;
   filter: drop-shadow(0 8px 12px rgba(4, 16, 20, 0.18));
   transform: translateX(-50%) translateY(1px) scale(1.06);
@@ -1053,14 +1057,18 @@ select {
 
 .dock-toggle:hover .face-glow,
 .contact-dock.open .face-glow,
-.contact-dock:focus-within .face-glow {
+.contact-dock:focus-within .face-glow,
+.contact-dock:has(.dock-link:hover) .face-glow,
+.contact-dock:has(.dock-link:focus-visible) .face-glow {
   fill: rgba(255, 255, 255, 0.16);
   transform: scale(1.06);
 }
 
 .dock-toggle:hover .face-aura,
 .contact-dock.open .face-aura,
-.contact-dock:focus-within .face-aura {
+.contact-dock:focus-within .face-aura,
+.contact-dock:has(.dock-link:hover) .face-aura,
+.contact-dock:has(.dock-link:focus-visible) .face-aura {
   opacity: 0.68;
   transform: scale(1.08);
 }
@@ -1115,14 +1123,18 @@ select {
 
 .dock-toggle:hover .face-sad,
 .contact-dock.open .face-sad,
-.contact-dock:focus-within .face-sad {
+.contact-dock:focus-within .face-sad,
+.contact-dock:has(.dock-link:hover) .face-sad,
+.contact-dock:has(.dock-link:focus-visible) .face-sad {
   opacity: 0;
   transform: translateY(-8px) scale(0.84);
 }
 
 .dock-toggle:hover .face-happy,
 .contact-dock.open .face-happy,
-.contact-dock:focus-within .face-happy {
+.contact-dock:focus-within .face-happy,
+.contact-dock:has(.dock-link:hover) .face-happy,
+.contact-dock:has(.dock-link:focus-visible) .face-happy {
   opacity: 1;
   transform: translateY(0) scale(1) rotate(0deg);
 }
@@ -1136,7 +1148,9 @@ select {
 
 .dock-toggle:hover .face-cheek,
 .contact-dock.open .face-cheek,
-.contact-dock:focus-within .face-cheek {
+.contact-dock:focus-within .face-cheek,
+.contact-dock:has(.dock-link:hover) .face-cheek,
+.contact-dock:has(.dock-link:focus-visible) .face-cheek {
   animation: cheekPop 0.42s ease both;
 }
 
@@ -1177,7 +1191,9 @@ select {
 
 .dock-toggle:hover .dock-code-badge,
 .contact-dock.open .dock-code-badge,
-.contact-dock:focus-within .dock-code-badge {
+.contact-dock:focus-within .dock-code-badge,
+.contact-dock:has(.dock-link:hover) .dock-code-badge,
+.contact-dock:has(.dock-link:focus-visible) .dock-code-badge {
   background:
     linear-gradient(145deg, rgba(16, 38, 53, 0.98), rgba(7, 16, 23, 1));
   transform: translateY(-4px) rotate(-6deg) scale(1.04);
