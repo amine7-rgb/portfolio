@@ -9,14 +9,6 @@ npm install
 npm run dev
 ```
 
-The API expects MongoDB at:
-
-```bash
-mongodb://127.0.0.1:27017/amine_portfolio
-```
-
-To use another database, copy `.env.example` to `.env` and update `MONGODB_URI`.
-
 ## Contact Email
 
 The contact form saves messages to MongoDB and can send them to your Gmail inbox.
