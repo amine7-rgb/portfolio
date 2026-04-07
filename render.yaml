@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: amine-portfolio
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 22.17.0
+      - key: CLIENT_ORIGIN
+        value: https://amine-portfolio.onrender.com
+      - key: CONTACT_TO_EMAIL
+        value: amed14170@gmail.com
+      - key: SMTP_HOST
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: 465
+      - key: SMTP_SECURE
+        value: true
+      - key: SMTP_USER
+        value: amed14170@gmail.com
+      - key: SMTP_PASS
+        sync: false
+      - key: MONGODB_URI
+        sync: false

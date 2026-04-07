@@ -221,7 +221,7 @@ const start = () => {
       console.warn(`MongoDB connection skipped: ${error.message}`);
     });
 
-  app.listen(port, () => {
+  app.listen(port, "0.0.0.0", () => {
     console.log(`API listening on http://localhost:${port}`);
   });
 };

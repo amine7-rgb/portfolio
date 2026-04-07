@@ -33,6 +33,21 @@ npm run build
 npm start
 ```
 
+## Deploy on Render
+
+This project is ready for a free Render web service using `render.yaml`.
+
+1. Push the repository to GitHub.
+2. Open Render and create a new Blueprint from `amine7-rgb/portfolio`.
+3. Add these secret environment variables in Render:
+
+```bash
+MONGODB_URI=your_mongodb_atlas_connection_string
+SMTP_PASS=your_gmail_app_password
+```
+
+Render will provide a free `onrender.com` URL. After the first deploy, update `CLIENT_ORIGIN` in Render if the service URL is different from `https://amine-portfolio.onrender.com`.
+
 ## GitHub
 
 Your public GitHub profile is already linked in the contact section:
