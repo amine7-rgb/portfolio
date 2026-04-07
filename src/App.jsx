@@ -28,9 +28,9 @@ const stacks = [
 ];
 
 const footerLinks = [
-  { key: "email", href: `mailto:${profileLinks.email}`, icon: "@" },
-  { key: "linkedin", href: profileLinks.linkedin, icon: "in" },
-  { key: "github", href: profileLinks.github, icon: "gh" }
+  { key: "email", href: `mailto:${profileLinks.email}`, icon: "mail", value: profileLinks.email },
+  { key: "linkedin", href: profileLinks.linkedin, icon: "linkedin", value: "mohamedamine-eloudi" },
+  { key: "github", href: profileLinks.github, icon: "github", value: "amine7-rgb" }
 ];
 
 function useTyping(words, speed = 70, pause = 1200) {
@@ -72,6 +72,7 @@ function App() {
   const [form, setForm] = useState({ name: "", email: "", company: "", budget: "", message: "" });
   const [toast, setToast] = useState(null);
   const [activeSection, setActiveSection] = useState("home");
+  const [contactDockOpen, setContactDockOpen] = useState(false);
   const t = translations[language];
   const typedRole = useTyping(t.hero.roles);
   const isRtl = language === "ar";
@@ -169,8 +170,13 @@ function App() {
     <div className={`site ${theme}`} dir={isRtl ? "rtl" : "ltr"}>
       <header className="nav">
         <a href="#home" className="brand" aria-label="Amine portfolio home">
-          <span className="logo-mark">MA</span>
-          <span>Amine</span>
+          <span className="brand-mark" aria-hidden="true">
+            <span className="brand-code">&lt;/&gt;</span>
+            <span className="brand-dot" />
+          </span>
+          <span className="brand-text">
+            Amine
+          </span>
         </a>
         <nav className="nav-links" aria-label={t.nav.label}>
           {t.nav.links.map((link) => (
@@ -185,11 +191,27 @@ function App() {
           ))}
         </nav>
         <div className="nav-actions">
-          <button className="ghost-button" type="button" onClick={() => setLanguage(language === "en" ? "ar" : "en")}>
-            {language === "en" ? "AR" : "EN"}
+          <button
+            className="language-switch"
+            type="button"
+            onClick={() => setLanguage(language === "en" ? "ar" : "en")}
+            aria-label="Switch language"
+          >
+            <span className={language === "en" ? "active" : ""}>EN</span>
+            <span className={language === "ar" ? "active" : ""}>AR</span>
           </button>
-          <button className="ghost-button" type="button" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
-            {theme === "dark" ? t.nav.light : t.nav.dark}
+          <button
+            className={`theme-switch ${theme}`}
+            type="button"
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            aria-label={theme === "dark" ? t.nav.light : t.nav.dark}
+          >
+            <span className="theme-track">
+              <span className="theme-icon sun" aria-hidden="true" />
+              <span className="theme-icon moon" aria-hidden="true" />
+              <span className="theme-knob" />
+            </span>
+            <span className="theme-label">{theme === "dark" ? t.nav.light : t.nav.dark}</span>
           </button>
         </div>
       </header>
@@ -292,10 +314,25 @@ function App() {
             <p className="eyebrow">{t.process.eyebrow}</p>
             <h2>{t.process.title}</h2>
           </div>
-          <div className="timeline">
+          <div className="workflow-road">
+            <svg className="workflow-path" viewBox="0 0 1000 260" preserveAspectRatio="none" aria-hidden="true">
+              <defs>
+                <linearGradient id="workflowGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#00c2a8" stopOpacity="0.12" />
+                  <stop offset="38%" stopColor="#54f0d8" stopOpacity="0.95" />
+                  <stop offset="72%" stopColor="#00a6c8" stopOpacity="0.88" />
+                  <stop offset="100%" stopColor="#00c2a8" stopOpacity="0.16" />
+                </linearGradient>
+              </defs>
+              <path className="workflow-path-glow" d="M40 150 C170 40 270 40 400 150 S630 260 760 150 S900 40 960 118" />
+              <path className="workflow-path-line" d="M40 150 C170 40 270 40 400 150 S630 260 760 150 S900 40 960 118" />
+              <circle className="workflow-orb orb-one" cx="78" cy="126" r="6" />
+              <circle className="workflow-orb orb-two" cx="492" cy="218" r="6" />
+              <circle className="workflow-orb orb-three" cx="900" cy="74" r="6" />
+            </svg>
             {t.process.steps.map((step, index) => (
-              <article key={step.title}>
-                <span>{String(index + 1).padStart(2, "0")}</span>
+              <article className="workflow-step" key={step.title} style={{ "--step-index": index }}>
+                <span className="workflow-number">{String(index + 1).padStart(2, "0")}</span>
                 <div>
                   <h3>{step.title}</h3>
                   <p>{step.copy}</p>
@@ -351,26 +388,83 @@ function App() {
         <div className="footer-main">
           <div className="footer-brand">
             <a href="#home" className="footer-logo" aria-label="Mohamed Amine Oudi home">
-              <span className="logo-mark logo-mark-large">MA</span>
+              <span className="brand-mark brand-mark-large" aria-hidden="true">
+                <span className="brand-code">&lt;/&gt;</span>
+                <span className="brand-dot" />
+              </span>
             </a>
             <div>
               <h2>{t.footer.name}</h2>
               <p>{t.footer.copy}</p>
             </div>
           </div>
-          <div className="footer-links" aria-label={t.footer.linksLabel}>
-            {footerLinks.map((link) => (
-              <a key={link.key} href={link.href} target={link.key === "email" ? undefined : "_blank"} rel="noreferrer">
-                <span>{link.icon}</span>
-                {t.footer.links[link.key]}
-              </a>
-            ))}
-          </div>
         </div>
         <div className="footer-bottom">
           <p>{t.footer.copyright}</p>
         </div>
       </footer>
+      <div
+        className={`contact-dock ${contactDockOpen ? "open" : ""}`}
+        onMouseLeave={() => setContactDockOpen(false)}
+        aria-label={t.footer.linksLabel}
+      >
+        <div className="dock-links">
+          {footerLinks.map((link, index) => (
+            <a
+              key={link.key}
+              className={`dock-link ${link.icon}`}
+              href={link.href}
+              style={{ "--dock-index": index }}
+              target={link.key === "email" ? undefined : "_blank"}
+              rel="noreferrer"
+              aria-label={t.footer.links[link.key]}
+            >
+              <span aria-hidden="true" />
+              <small>{t.footer.links[link.key]}</small>
+            </a>
+          ))}
+        </div>
+        <button
+          className="dock-toggle"
+          type="button"
+          aria-label={t.footer.linksLabel}
+          aria-expanded={contactDockOpen}
+          onClick={() => setContactDockOpen((current) => !current)}
+          onFocus={() => setContactDockOpen(true)}
+        >
+          <svg className="dock-face" viewBox="0 0 84 84" aria-hidden="true">
+            <defs>
+              <radialGradient id="faceAura" cx="34%" cy="24%" r="78%">
+                <stop offset="0%" stopColor="#ffffff" stopOpacity="0.44" />
+                <stop offset="48%" stopColor="#54f0d8" stopOpacity="0.12" />
+                <stop offset="100%" stopColor="#041014" stopOpacity="0" />
+              </radialGradient>
+            </defs>
+            <circle className="face-glow" cx="42" cy="42" r="37" />
+            <circle className="face-aura" cx="42" cy="42" r="31" fill="url(#faceAura)" />
+            <g className="face-sad">
+              <path className="face-brow" d="M23 23L36 27" />
+              <path className="face-brow" d="M61 23L48 27" />
+              <path className="face-eye" d="M22 34C27 30 32 30 37 34" />
+              <path className="face-eye" d="M47 34C52 30 57 30 62 34" />
+              <path className="face-mouth" d="M28 61C34 50 50 50 56 61" />
+            </g>
+            <g className="face-happy">
+              <path className="face-spark" d="M17 25L17 17" />
+              <path className="face-spark" d="M13 21L21 21" />
+              <path className="face-eye" d="M23 31C28 36 33 36 38 31" />
+              <path className="face-eye" d="M46 31C51 36 56 36 61 31" />
+              <path className="face-mouth" d="M25 50C31 66 53 66 59 50" />
+              <path className="face-smile-shine" d="M33 56C38 60 46 60 51 56" />
+              <circle className="face-cheek" cx="20" cy="48" r="4" />
+              <circle className="face-cheek" cx="64" cy="48" r="4" />
+            </g>
+          </svg>
+          <span className="dock-code-badge" aria-hidden="true">
+            &lt;/&gt;
+          </span>
+        </button>
+      </div>
       {toast && (
         <div className={`toast ${toast.type}`} role="status" aria-live="polite">
           <span />
