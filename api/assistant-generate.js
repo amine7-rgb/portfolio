@@ -32,7 +32,7 @@ export default async function handler(req, res) {
       draft,
       language,
       apiKey: env("OPENAI_API_KEY"),
-      model: env("OPENAI_MODEL", "gpt-5.4-mini")
+      model: env("OPENAI_MODEL", "gpt-5-mini")
     });
 
     return res.status(200).json({

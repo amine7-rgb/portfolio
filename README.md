@@ -24,7 +24,7 @@ SMTP_SECURE=true
 SMTP_USER=amed14170@gmail.com
 SMTP_PASS=your_gmail_app_password
 OPENAI_API_KEY=your_openai_api_key
-OPENAI_MODEL=gpt-5.4-mini
+OPENAI_MODEL=gpt-5-mini
 ```
 
 For Gmail, `SMTP_PASS` should be a Google App Password, not your normal Gmail password.
@@ -48,7 +48,7 @@ This project is ready for a free Render web service using `render.yaml`.
 MONGODB_URI=your_mongodb_atlas_connection_string
 SMTP_PASS=your_gmail_app_password
 OPENAI_API_KEY=your_openai_api_key
-OPENAI_MODEL=gpt-5.4-mini
+OPENAI_MODEL=gpt-5-mini
 ```
 
 Render will provide a free `onrender.com` URL. After the first deploy, update `CLIENT_ORIGIN` in Render if the service URL is different from `https://amine-portfolio.onrender.com`.
@@ -68,7 +68,7 @@ SMTP_SECURE=true
 SMTP_USER=amed14170@gmail.com
 SMTP_PASS=your_gmail_app_password
 OPENAI_API_KEY=your_openai_api_key
-OPENAI_MODEL=gpt-5.4-mini
+OPENAI_MODEL=gpt-5-mini
 ```
 
 Recommended project name: `med-amineoudi`.

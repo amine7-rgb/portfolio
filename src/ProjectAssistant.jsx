@@ -12,6 +12,7 @@ const teaserDelayMs = 7000;
 const teaserVisibleMs = 5200;
 const teaserReminderMs = 45 * 60 * 1000;
 const teaserOpenMuteMs = 6 * 60 * 60 * 1000;
+const totalSteps = 5;
 
 const initialDraft = {
   projectType: "custom",
@@ -46,11 +47,15 @@ function ProjectAssistant({ language, budgetOptions, onToast }) {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const ideaInputRef = useRef(null);
+  const audienceInputRef = useRef(null);
+  const firstActionInputRef = useRef(null);
+  const threadEndRef = useRef(null);
 
   const canGenerate = draft.rawIdea.trim().length > 0;
   const previewBrief = useMemo(() => (canGenerate ? generateProjectBrief(draft) : null), [canGenerate, draft]);
   const selectedType = assistantProjectTypes.find((item) => item.id === draft.projectType) || assistantProjectTypes.at(-1);
   const generationKey = useMemo(() => JSON.stringify({ language, draft }), [draft, language]);
+  const progressValue = step >= totalSteps ? totalSteps : step + 1;
 
   useEffect(() => {
     if (open) {
@@ -87,15 +92,64 @@ function ProjectAssistant({ language, budgetOptions, onToast }) {
       return undefined;
     }
 
-    const timer = setTimeout(() => {
-      ideaInputRef.current?.focus();
-    }, 180);
+    const previousOverflow = document.body.style.overflow;
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        localStorage.setItem(TEASER_STORAGE_KEY, String(Date.now() + teaserReminderMs));
+        setOpen(false);
+      }
+    };
 
-    return () => clearTimeout(timer);
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, [open]);
 
   useEffect(() => {
-    if (step < 5 || !canGenerate) {
+    if (!open) {
+      return undefined;
+    }
+
+    const timer = setTimeout(() => {
+      if (step === 0) {
+        ideaInputRef.current?.focus();
+        return;
+      }
+
+      if (step === 1) {
+        audienceInputRef.current?.focus();
+        return;
+      }
+
+      if (step === 2) {
+        firstActionInputRef.current?.focus();
+      }
+    }, 180);
+
+    return () => clearTimeout(timer);
+  }, [open, step]);
+
+  useEffect(() => {
+    if (!open) {
+      return undefined;
+    }
+
+    const timer = setTimeout(() => {
+      threadEndRef.current?.scrollIntoView({
+        behavior: step > 0 || brief ? "smooth" : "auto",
+        block: "end"
+      });
+    }, 140);
+
+    return () => clearTimeout(timer);
+  }, [brief, open, step, submitted]);
+
+  useEffect(() => {
+    if (step < totalSteps || !canGenerate) {
       return undefined;
     }
 
@@ -171,6 +225,11 @@ function ProjectAssistant({ language, budgetOptions, onToast }) {
     setSubmitted(false);
   };
 
+  const moveToStep = (nextStep) => {
+    setStep(nextStep);
+    setSubmitted(false);
+  };
+
   const toggleRequirement = (value) => {
     setDraft((current) => ({
       ...current,
@@ -225,34 +284,41 @@ function ProjectAssistant({ language, budgetOptions, onToast }) {
   const questionCards = [
     {
       key: "audience",
+      index: 1,
       title: copy.audienceTitle,
       prompt: copy.audiencePrompt,
-      placeholder: copy.audiencePlaceholder
+      placeholder: copy.audiencePlaceholder,
+      inputRef: audienceInputRef
     },
     {
       key: "firstAction",
+      index: 2,
       title: copy.firstActionTitle,
       prompt: copy.firstActionPrompt,
-      placeholder: copy.firstActionPlaceholder
+      placeholder: copy.firstActionPlaceholder,
+      inputRef: firstActionInputRef
     }
   ];
 
-  const renderQuestionStep = (question, index) => (
+  const renderQuestionStep = (question) => (
     <div className="assistant-step-card">
-      <p className="assistant-step-index">{copy.stepLabel} {index + 2}</p>
+      <p className="assistant-step-index">
+        {copy.stepLabel} {question.index + 1}
+      </p>
       <h4>{question.title}</h4>
       <p>{question.prompt}</p>
       <textarea
+        ref={question.inputRef}
         rows="4"
         value={draft[question.key]}
         placeholder={question.placeholder}
         onChange={(event) => updateDraft(question.key, event.target.value)}
       />
       <div className="assistant-step-actions">
-        <button className="secondary-button" type="button" onClick={() => setStep((current) => current + 1)}>
+        <button className="secondary-button" type="button" onClick={() => moveToStep(question.index + 1)}>
           {copy.skip}
         </button>
-        <button className="primary-button" type="button" onClick={() => setStep((current) => current + 1)}>
+        <button className="primary-button" type="button" onClick={() => moveToStep(question.index + 1)}>
           {copy.continue}
         </button>
       </div>
@@ -260,355 +326,381 @@ function ProjectAssistant({ language, budgetOptions, onToast }) {
   );
 
   return (
-    <div className={`assistant-widget ${open ? "open" : ""}`}>
-      {teaserVisible && !open ? (
-        <div className="assistant-teaser" role="status" aria-live="polite">
-          <button className="assistant-teaser-close" type="button" onClick={() => setTeaserVisible(false)} aria-label={copy.dismissTeaser}>
-            x
-          </button>
-          <p className="assistant-teaser-label">{copy.teaserEyebrow}</p>
-          <strong>{copy.teaserTitle}</strong>
-          <p>{copy.teaserCopy}</p>
-          <button className="assistant-teaser-cta" type="button" onClick={openAssistant}>
-            {copy.openAssistant}
-          </button>
-        </div>
-      ) : null}
-
-      <button className="assistant-trigger" type="button" onClick={openAssistant} aria-label={copy.openAssistant}>
-        <span className="assistant-status-dot" aria-hidden="true" />
-        <span className="assistant-trigger-ring" aria-hidden="true" />
-        <span className="assistant-trigger-avatar">
-          <AssistantAvatar alt={copy.avatarAlt} />
-        </span>
-      </button>
-
-      {open ? (
-        <aside className="assistant-panel" role="dialog" aria-label={copy.panelTitle}>
-          <div className="assistant-panel-header">
-            <div className="assistant-panel-title">
-              <span className="assistant-panel-avatar">
-                <AssistantAvatar alt={copy.avatarAlt} />
-              </span>
-              <div>
-                <p>{copy.panelEyebrow}</p>
-                <h3>{copy.panelTitle}</h3>
-              </div>
-            </div>
-            <button className="assistant-close" type="button" onClick={closeAssistant} aria-label={copy.closeAssistant}>
+    <>
+      <div className={`assistant-widget ${open ? "open" : ""}`}>
+        {teaserVisible && !open ? (
+          <div className="assistant-teaser" role="status" aria-live="polite">
+            <button
+              className="assistant-teaser-close"
+              type="button"
+              onClick={() => setTeaserVisible(false)}
+              aria-label={copy.dismissTeaser}
+            >
               x
             </button>
+            <p className="assistant-teaser-label">{copy.teaserEyebrow}</p>
+            <strong>{copy.teaserTitle}</strong>
+            <p>{copy.teaserCopy}</p>
+            <button className="assistant-teaser-cta" type="button" onClick={openAssistant}>
+              {copy.openAssistant}
+            </button>
           </div>
+        ) : null}
 
-          <div className="assistant-panel-body">
-            <div className="assistant-message">
-              <span className="assistant-bubble assistant-bubble-brand">{copy.welcomeTitle}</span>
-              <p>{copy.welcomeCopy}</p>
-            </div>
+        <button className="assistant-trigger" type="button" onClick={openAssistant} aria-label={copy.openAssistant}>
+          <span className="assistant-status-dot" aria-hidden="true" />
+          <span className="assistant-trigger-ring" aria-hidden="true" />
+          <span className="assistant-trigger-avatar">
+            <AssistantAvatar alt={copy.avatarAlt} />
+          </span>
+        </button>
+      </div>
 
-            <div className="assistant-quick-types" aria-label={copy.projectTypeLabel}>
-              {assistantProjectTypes.map((item) => (
-                <button
-                  key={item.id}
-                  className={draft.projectType === item.id ? "active" : ""}
-                  type="button"
-                  onClick={() => updateDraft("projectType", item.id)}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-
-            <div className="assistant-thread">
-              <div className="assistant-step-card">
-                <p className="assistant-step-index">{copy.stepLabel} 1</p>
-                <h4>{copy.ideaTitle}</h4>
-                <p>{copy.ideaPrompt}</p>
-                <textarea
-                  ref={ideaInputRef}
-                  autoFocus
-                  rows="5"
-                  value={draft.rawIdea}
-                  placeholder={copy.ideaPlaceholder}
-                  onChange={(event) => updateDraft("rawIdea", event.target.value)}
-                />
-                <div className="assistant-step-actions">
-                  <button
-                    className="primary-button"
-                    type="button"
-                    onClick={() => setStep(1)}
-                    disabled={!draft.rawIdea.trim()}
-                  >
-                    {copy.startBrief}
-                  </button>
+      {open ? (
+        <div className="assistant-modal" role="presentation">
+          <button className="assistant-backdrop" type="button" onClick={closeAssistant} aria-label={copy.closeAssistant} />
+          <aside className="assistant-panel" role="dialog" aria-modal="true" aria-label={copy.panelTitle}>
+            <div className="assistant-panel-header">
+              <div className="assistant-panel-title">
+                <span className="assistant-panel-avatar">
+                  <AssistantAvatar alt={copy.avatarAlt} />
+                </span>
+                <div>
+                  <p>{copy.panelEyebrow}</p>
+                  <h3>{copy.panelTitle}</h3>
                 </div>
               </div>
+              <button className="assistant-close" type="button" onClick={closeAssistant} aria-label={copy.closeAssistant}>
+                <span aria-hidden="true">×</span>
+              </button>
+            </div>
 
-              {step >= 1 && draft.rawIdea ? (
-                <div className="assistant-user-reply">
-                  <span>{copy.ideaCaptured}</span>
-                  <p>{draft.rawIdea}</p>
-                </div>
-              ) : null}
+            <div className="assistant-panel-body">
+              <div className="assistant-progress">
+                <span>{copy.stepLabel}</span>
+                <strong>{step >= totalSteps ? copy.progressReady || "Brief ready" : `${progressValue} / ${totalSteps}`}</strong>
+              </div>
 
-              {step === 1 ? renderQuestionStep(questionCards[0], 0) : null}
-              {step >= 2 ? (
-                <div className="assistant-user-reply">
-                  <span>{copy.audienceTitle}</span>
-                  <p>{draft.audience || copy.skippedAnswer}</p>
-                </div>
-              ) : null}
+              <div className="assistant-message">
+                <span className="assistant-bubble assistant-bubble-brand">{copy.welcomeTitle}</span>
+                <p>{copy.welcomeCopy}</p>
+              </div>
 
-              {step === 2 ? renderQuestionStep(questionCards[1], 1) : null}
-              {step >= 3 ? (
-                <div className="assistant-user-reply">
-                  <span>{copy.firstActionTitle}</span>
-                  <p>{draft.firstAction || copy.skippedAnswer}</p>
-                </div>
-              ) : null}
+              <div className="assistant-quick-types" aria-label={copy.projectTypeLabel}>
+                {assistantProjectTypes.map((item) => (
+                  <button
+                    key={item.id}
+                    className={draft.projectType === item.id ? "active" : ""}
+                    type="button"
+                    onClick={() => updateDraft("projectType", item.id)}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
 
-              {step === 3 ? (
+              <div className="assistant-thread">
                 <div className="assistant-step-card">
-                  <p className="assistant-step-index">{copy.stepLabel} 4</p>
-                  <h4>{copy.requirementsTitle}</h4>
-                  <p>{copy.requirementsPrompt}</p>
-                  <div className="assistant-chip-grid">
-                    {assistantRequirementOptions.map((item) => (
-                      <button
-                        key={item.id}
-                        className={draft.requirements.includes(item.id) ? "active" : ""}
-                        type="button"
-                        onClick={() => toggleRequirement(item.id)}
-                      >
-                        {item.label}
-                      </button>
-                    ))}
-                  </div>
+                  <p className="assistant-step-index">
+                    {copy.stepLabel} 1
+                  </p>
+                  <h4>{copy.ideaTitle}</h4>
+                  <p>{copy.ideaPrompt}</p>
+                  <textarea
+                    ref={ideaInputRef}
+                    autoFocus
+                    rows="5"
+                    value={draft.rawIdea}
+                    placeholder={copy.ideaPlaceholder}
+                    onChange={(event) => updateDraft("rawIdea", event.target.value)}
+                  />
+                  <p className="assistant-step-note">{copy.discoveryNote || "I will guide you through a few quick questions, then build the brief."}</p>
                   <div className="assistant-step-actions">
-                    <button className="primary-button" type="button" onClick={() => setStep(4)}>
-                      {copy.continue}
-                    </button>
-                  </div>
-                </div>
-              ) : null}
-
-              {step >= 4 ? (
-                <div className="assistant-user-reply">
-                  <span>{copy.requirementsTitle}</span>
-                  <p>{(brief?.requirementSummary || previewBrief?.requirementSummary || []).join(" / ") || copy.noSpecialRequirements}</p>
-                </div>
-              ) : null}
-
-              {step === 4 ? (
-                <div className="assistant-step-card">
-                  <p className="assistant-step-index">{copy.stepLabel} 5</p>
-                  <h4>{copy.timelineTitle}</h4>
-                  <p>{copy.timelinePrompt}</p>
-                  <div className="assistant-chip-grid">
-                    {assistantTimelineOptions.map((item) => (
-                      <button
-                        key={item}
-                        className={draft.timeline === item ? "active" : ""}
-                        type="button"
-                        onClick={() => updateDraft("timeline", item)}
-                      >
-                        {item}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="assistant-step-actions">
-                    <button
-                      className="secondary-button"
-                      type="button"
-                      onClick={() => {
-                        updateDraft("timeline", draft.timeline || assistantTimelineOptions.at(-1));
-                        setStep(5);
-                      }}
-                    >
-                      {copy.skip}
-                    </button>
                     <button
                       className="primary-button"
                       type="button"
-                      onClick={() => {
-                        updateDraft("timeline", draft.timeline || assistantTimelineOptions.at(-1));
-                        setStep(5);
-                      }}
+                      onClick={() => moveToStep(1)}
+                      disabled={!draft.rawIdea.trim()}
                     >
-                      {copy.generateBrief}
+                      {copy.startDiscovery || copy.continue}
                     </button>
                   </div>
                 </div>
-              ) : null}
 
-              {step >= 5 ? (
-                <>
-                  <div className="assistant-message">
-                    <span className="assistant-bubble">{isGenerating ? copy.generatingTitle : copy.generatedTitle}</span>
-                    <p>{isGenerating ? copy.generatingCopy : copy.generatedCopy}</p>
+                {step >= 1 && draft.rawIdea ? (
+                  <div className="assistant-user-reply">
+                    <span>{copy.ideaCaptured}</span>
+                    <p>{draft.rawIdea}</p>
                   </div>
+                ) : null}
 
-                  {brief ? (
-                    <>
-                      <div className="assistant-summary-grid">
-                        <article>
-                          <span>{copy.summaryLabels.projectType}</span>
-                          <strong>{selectedType.label}</strong>
-                        </article>
-                        <article>
-                          <span>{copy.summaryLabels.timeline}</span>
-                          <strong>{draft.timeline || assistantTimelineOptions.at(-1)}</strong>
-                        </article>
-                        <article>
-                          <span>{copy.summaryLabels.complexity}</span>
-                          <strong>{brief.complexity}</strong>
-                        </article>
-                        <article>
-                          <span>{copy.summaryLabels.engine}</span>
-                          <strong>{generationMode === "openai" ? copy.aiMode : copy.backupMode}</strong>
-                        </article>
-                      </div>
+                {step === 1 ? renderQuestionStep(questionCards[0]) : null}
+                {step >= 2 ? (
+                  <div className="assistant-user-reply">
+                    <span>{copy.audienceTitle}</span>
+                    <p>{draft.audience || copy.skippedAnswer}</p>
+                  </div>
+                ) : null}
 
-                      <div className="assistant-engine-note">
-                        <span>{copy.engineLabel}</span>
-                        <p>{generationMode === "openai" ? `${copy.engineAiCopy} ${generationModel}.` : copy.engineFallbackCopy}</p>
-                      </div>
+                {step === 2 ? renderQuestionStep(questionCards[1]) : null}
+                {step >= 3 ? (
+                  <div className="assistant-user-reply">
+                    <span>{copy.firstActionTitle}</span>
+                    <p>{draft.firstAction || copy.skippedAnswer}</p>
+                  </div>
+                ) : null}
 
-                      <div className="assistant-brief">
-                        <article>
-                          <span>{copy.sections.overview}</span>
-                          <p>{brief.overview}</p>
-                        </article>
-                        <article>
-                          <span>{copy.sections.goal}</span>
-                          <p>{brief.businessGoal}</p>
-                        </article>
-                        <article>
-                          <span>{copy.sections.users}</span>
-                          <p>{brief.targetUsers}</p>
-                        </article>
-                        <article>
-                          <span>{copy.sections.features}</span>
-                          <ul>
-                            {brief.coreFeatures.map((item) => (
-                              <li key={item}>{item}</li>
-                            ))}
-                          </ul>
-                        </article>
-                        <article>
-                          <span>{copy.sections.modules}</span>
-                          <ul>
-                            {brief.pagesModules.map((item) => (
-                              <li key={item}>{item}</li>
-                            ))}
-                          </ul>
-                        </article>
-                        <article>
-                          <span>{copy.sections.admin}</span>
-                          <p>{brief.adminBackoffice}</p>
-                        </article>
-                        <article>
-                          <span>{copy.sections.ai}</span>
-                          <p>{brief.aiAutomation}</p>
-                        </article>
-                        <article>
-                          <span>{copy.sections.stack}</span>
-                          <div className="assistant-brief-tags">
-                            {brief.suggestedStack.map((item) => (
-                              <strong key={item}>{item}</strong>
-                            ))}
-                          </div>
-                        </article>
-                        <article>
-                          <span>{copy.sections.deployment}</span>
-                          <p>{brief.deployment}</p>
-                        </article>
-                        <article>
-                          <span>{copy.sections.questions}</span>
-                          <ul>
-                            {brief.openQuestions.map((item) => (
-                              <li key={item}>{item}</li>
-                            ))}
-                          </ul>
-                        </article>
-                      </div>
-
-                      <div className="assistant-refine">
-                        <p>{copy.refineLabel}</p>
-                        <div className="assistant-chip-grid">
-                          {assistantRequirementOptions.map((item) => (
-                            <button
-                              key={item.id}
-                              className={draft.requirements.includes(item.id) ? "active" : ""}
-                              type="button"
-                              onClick={() => toggleRequirement(item.id)}
-                            >
-                              {item.label}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </>
-                  ) : null}
-
-                  {brief ? submitted ? (
-                    <div className="assistant-success">
-                      <span className="assistant-bubble assistant-bubble-brand">{copy.successTitle}</span>
-                      <p>{copy.successCopy}</p>
-                      <button className="primary-button" type="button" onClick={resetAssistant}>
-                        {copy.startAnother}
+                {step === 3 ? (
+                  <div className="assistant-step-card">
+                    <p className="assistant-step-index">
+                      {copy.stepLabel} 4
+                    </p>
+                    <h4>{copy.requirementsTitle}</h4>
+                    <p>{copy.requirementsPrompt}</p>
+                    <div className="assistant-chip-grid">
+                      {assistantRequirementOptions.map((item) => (
+                        <button
+                          key={item.id}
+                          className={draft.requirements.includes(item.id) ? "active" : ""}
+                          type="button"
+                          onClick={() => toggleRequirement(item.id)}
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="assistant-step-actions">
+                      <button className="primary-button" type="button" onClick={() => moveToStep(4)}>
+                        {copy.continue}
                       </button>
                     </div>
-                  ) : (
-                    <form className="assistant-lead-form" onSubmit={submitBrief}>
-                      <div className="assistant-form-heading">
-                        <p>{copy.sendTitle}</p>
-                        <span>{copy.sendCopy}</span>
-                      </div>
-                      <label>
-                        {copy.form.name}
-                        <input name="name" value={lead.name} onChange={handleLeadChange} required />
-                      </label>
-                      <label>
-                        {copy.form.email}
-                        <input name="email" type="email" value={lead.email} onChange={handleLeadChange} required />
-                      </label>
-                      <label>
-                        {copy.form.company}
-                        <input name="company" value={lead.company} onChange={handleLeadChange} />
-                      </label>
-                      <label>
-                        {copy.form.budget}
-                        <select name="budget" value={lead.budget} onChange={handleLeadChange}>
-                          <option value="">{copy.form.budgetPlaceholder}</option>
-                          {budgetOptions.map((option) => (
-                            <option key={option} value={option}>
-                              {option}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                      <label className="assistant-form-wide">
-                        {copy.form.notes}
-                        <textarea name="notes" rows="4" value={lead.notes} onChange={handleLeadChange} />
-                      </label>
-                      <div className="assistant-form-actions assistant-form-wide">
-                        <button className="secondary-button" type="button" onClick={resetAssistant}>
-                          {copy.startOver}
+                  </div>
+                ) : null}
+
+                {step >= 4 ? (
+                  <div className="assistant-user-reply">
+                    <span>{copy.requirementsTitle}</span>
+                    <p>{(brief?.requirementSummary || previewBrief?.requirementSummary || []).join(" / ") || copy.noSpecialRequirements}</p>
+                  </div>
+                ) : null}
+
+                {step === 4 ? (
+                  <div className="assistant-step-card">
+                    <p className="assistant-step-index">
+                      {copy.stepLabel} 5
+                    </p>
+                    <h4>{copy.timelineTitle}</h4>
+                    <p>{copy.timelinePrompt}</p>
+                    <div className="assistant-chip-grid">
+                      {assistantTimelineOptions.map((item) => (
+                        <button
+                          key={item}
+                          className={draft.timeline === item ? "active" : ""}
+                          type="button"
+                          onClick={() => updateDraft("timeline", item)}
+                        >
+                          {item}
                         </button>
-                        <button className="primary-button" type="submit" disabled={submitting || isGenerating}>
-                          {submitting ? copy.sending : copy.sendBrief}
-                        </button>
-                      </div>
-                    </form>
-                  ) : null}
-                </>
-              ) : null}
+                      ))}
+                    </div>
+                    <div className="assistant-step-actions">
+                      <button
+                        className="secondary-button"
+                        type="button"
+                        onClick={() => {
+                          updateDraft("timeline", draft.timeline || assistantTimelineOptions.at(-1));
+                          moveToStep(5);
+                        }}
+                      >
+                        {copy.skip}
+                      </button>
+                      <button
+                        className="primary-button"
+                        type="button"
+                        onClick={() => {
+                          updateDraft("timeline", draft.timeline || assistantTimelineOptions.at(-1));
+                          moveToStep(5);
+                        }}
+                      >
+                        {copy.startBrief}
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
+
+                {step >= 5 ? (
+                  <>
+                    <div className="assistant-message">
+                      <span className="assistant-bubble">{isGenerating ? copy.generatingTitle : copy.generatedTitle}</span>
+                      <p>{isGenerating ? copy.generatingCopy : copy.generatedCopy}</p>
+                    </div>
+
+                    {brief ? (
+                      <>
+                        <div className="assistant-summary-grid">
+                          <article>
+                            <span>{copy.summaryLabels.projectType}</span>
+                            <strong>{selectedType.label}</strong>
+                          </article>
+                          <article>
+                            <span>{copy.summaryLabels.timeline}</span>
+                            <strong>{draft.timeline || assistantTimelineOptions.at(-1)}</strong>
+                          </article>
+                          <article>
+                            <span>{copy.summaryLabels.complexity}</span>
+                            <strong>{brief.complexity}</strong>
+                          </article>
+                          <article>
+                            <span>{copy.summaryLabels.engine}</span>
+                            <strong>{generationMode === "openai" ? copy.aiMode : copy.backupMode}</strong>
+                          </article>
+                        </div>
+
+                        <div className="assistant-engine-note">
+                          <span>{copy.engineLabel}</span>
+                          <p>{generationMode === "openai" ? `${copy.engineAiCopy} ${generationModel}.` : copy.engineFallbackCopy}</p>
+                        </div>
+
+                        <div className="assistant-brief">
+                          <article>
+                            <span>{copy.sections.overview}</span>
+                            <p>{brief.overview}</p>
+                          </article>
+                          <article>
+                            <span>{copy.sections.goal}</span>
+                            <p>{brief.businessGoal}</p>
+                          </article>
+                          <article>
+                            <span>{copy.sections.users}</span>
+                            <p>{brief.targetUsers}</p>
+                          </article>
+                          <article>
+                            <span>{copy.sections.features}</span>
+                            <ul>
+                              {brief.coreFeatures.map((item) => (
+                                <li key={item}>{item}</li>
+                              ))}
+                            </ul>
+                          </article>
+                          <article>
+                            <span>{copy.sections.modules}</span>
+                            <ul>
+                              {brief.pagesModules.map((item) => (
+                                <li key={item}>{item}</li>
+                              ))}
+                            </ul>
+                          </article>
+                          <article>
+                            <span>{copy.sections.admin}</span>
+                            <p>{brief.adminBackoffice}</p>
+                          </article>
+                          <article>
+                            <span>{copy.sections.ai}</span>
+                            <p>{brief.aiAutomation}</p>
+                          </article>
+                          <article>
+                            <span>{copy.sections.stack}</span>
+                            <div className="assistant-brief-tags">
+                              {brief.suggestedStack.map((item) => (
+                                <strong key={item}>{item}</strong>
+                              ))}
+                            </div>
+                          </article>
+                          <article>
+                            <span>{copy.sections.deployment}</span>
+                            <p>{brief.deployment}</p>
+                          </article>
+                          <article>
+                            <span>{copy.sections.questions}</span>
+                            <ul>
+                              {brief.openQuestions.map((item) => (
+                                <li key={item}>{item}</li>
+                              ))}
+                            </ul>
+                          </article>
+                        </div>
+
+                        <div className="assistant-refine">
+                          <p>{copy.refineLabel}</p>
+                          <div className="assistant-chip-grid">
+                            {assistantRequirementOptions.map((item) => (
+                              <button
+                                key={item.id}
+                                className={draft.requirements.includes(item.id) ? "active" : ""}
+                                type="button"
+                                onClick={() => toggleRequirement(item.id)}
+                              >
+                                {item.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </>
+                    ) : null}
+
+                    {brief ? (
+                      submitted ? (
+                        <div className="assistant-success">
+                          <span className="assistant-bubble assistant-bubble-brand">{copy.successTitle}</span>
+                          <p>{copy.successCopy}</p>
+                          <button className="primary-button" type="button" onClick={resetAssistant}>
+                            {copy.startAnother}
+                          </button>
+                        </div>
+                      ) : (
+                        <form className="assistant-lead-form" onSubmit={submitBrief}>
+                          <div className="assistant-form-heading">
+                            <p>{copy.sendTitle}</p>
+                            <span>{copy.sendCopy}</span>
+                          </div>
+                          <label>
+                            {copy.form.name}
+                            <input name="name" value={lead.name} onChange={handleLeadChange} required />
+                          </label>
+                          <label>
+                            {copy.form.email}
+                            <input name="email" type="email" value={lead.email} onChange={handleLeadChange} required />
+                          </label>
+                          <label>
+                            {copy.form.company}
+                            <input name="company" value={lead.company} onChange={handleLeadChange} />
+                          </label>
+                          <label>
+                            {copy.form.budget}
+                            <select name="budget" value={lead.budget} onChange={handleLeadChange}>
+                              <option value="">{copy.form.budgetPlaceholder}</option>
+                              {budgetOptions.map((option) => (
+                                <option key={option} value={option}>
+                                  {option}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                          <label className="assistant-form-wide">
+                            {copy.form.notes}
+                            <textarea name="notes" rows="4" value={lead.notes} onChange={handleLeadChange} />
+                          </label>
+                          <div className="assistant-form-actions assistant-form-wide">
+                            <button className="secondary-button" type="button" onClick={resetAssistant}>
+                              {copy.startOver}
+                            </button>
+                            <button className="primary-button" type="submit" disabled={submitting || isGenerating}>
+                              {submitting ? copy.sending : copy.sendBrief}
+                            </button>
+                          </div>
+                        </form>
+                      )
+                    ) : null}
+                  </>
+                ) : null}
+
+                <div ref={threadEndRef} className="assistant-thread-end" aria-hidden="true" />
+              </div>
             </div>
-          </div>
-        </aside>
+          </aside>
+        </div>
       ) : null}
-    </div>
+    </>
   );
 }
 

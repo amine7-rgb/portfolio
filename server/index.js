@@ -257,8 +257,8 @@ app.post("/api/assistant-generate", async (req, res) => {
     const result = await generateAssistantBrief({
       draft,
       language,
-      apiKey: process.env.OPENAI_API_KEY || "",
-      model: process.env.OPENAI_MODEL || "gpt-5.4-mini"
+      apiKey: (process.env.OPENAI_API_KEY || "").trim(),
+      model: (process.env.OPENAI_MODEL || "gpt-5-mini").trim()
     });
 
     return res.status(200).json({

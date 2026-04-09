@@ -1226,20 +1226,39 @@ select {
   top: 10px;
 }
 
+.assistant-modal {
+  align-items: flex-end;
+  display: flex;
+  inset: 0;
+  justify-content: flex-start;
+  padding: 24px;
+  position: fixed;
+  z-index: 27;
+}
+
+.assistant-backdrop {
+  background: rgba(4, 10, 14, 0.46);
+  border: 0;
+  cursor: pointer;
+  inset: 0;
+  padding: 0;
+  position: absolute;
+}
+
 .assistant-panel {
   animation: assistantEnter 0.35s ease both;
   background: color-mix(in srgb, var(--surface) 96%, transparent);
   border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--line));
   border-radius: 8px;
-  bottom: 10px;
   box-shadow: 0 36px 96px rgba(0, 0, 0, 0.4);
   display: grid;
-  left: 108px;
+  grid-template-rows: auto minmax(0, 1fr);
+  margin-left: 102px;
   max-height: min(82vh, 860px);
   overflow: hidden;
   pointer-events: auto;
-  position: absolute;
-  width: min(430px, calc(100vw - 36px));
+  position: relative;
+  width: min(448px, calc(100vw - 36px));
   z-index: 3;
 }
 
@@ -1284,18 +1303,61 @@ select {
 }
 
 .assistant-close {
-  background: transparent;
-  border: 0;
-  color: #91a6b1;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  color: #dce7ec;
   cursor: pointer;
-  font-size: 0.92rem;
+  display: inline-flex;
+  font-size: 1.2rem;
   font-weight: 900;
-  padding: 4px;
+  height: 38px;
+  justify-content: center;
+  padding: 0;
+  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+  width: 38px;
+}
+
+.assistant-close:hover {
+  background: rgba(84, 240, 216, 0.12);
+  border-color: rgba(84, 240, 216, 0.32);
+  transform: translateY(-1px);
 }
 
 .assistant-panel-body {
-  overflow: auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 16px;
+  scrollbar-gutter: stable;
+  -webkit-overflow-scrolling: touch;
+}
+
+.assistant-progress {
+  align-items: center;
+  background: color-mix(in srgb, var(--panel) 84%, transparent);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding: 12px 14px;
+}
+
+.assistant-progress span {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.assistant-progress strong {
+  color: var(--accent);
+  font-size: 0.92rem;
+  font-weight: 900;
 }
 
 .assistant-message {
@@ -1367,6 +1429,7 @@ select {
 .assistant-thread {
   display: grid;
   gap: 16px;
+  padding-bottom: 2px;
 }
 
 .assistant-step-card,
@@ -1401,6 +1464,13 @@ select {
 .assistant-form-heading p {
   font-size: 1rem;
   margin: 0 0 8px;
+}
+
+.assistant-step-note {
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.6;
+  margin-top: 12px !important;
 }
 
 .assistant-step-card textarea,
@@ -1554,6 +1624,10 @@ select {
 .assistant-success {
   display: grid;
   gap: 12px;
+}
+
+.assistant-thread-end {
+  height: 1px;
 }
 
 @keyframes assistantBob {
@@ -2263,6 +2337,11 @@ select {
     left: 18px;
   }
 
+  .assistant-modal {
+    align-items: flex-end;
+    padding: 12px;
+  }
+
   .assistant-trigger {
     height: 82px;
     width: 82px;
@@ -2278,8 +2357,8 @@ select {
   }
 
   .assistant-panel {
-    bottom: 96px;
-    left: 0;
+    margin-left: 0;
+    max-height: min(76vh, 760px);
     width: min(100vw - 24px, 420px);
   }
 
