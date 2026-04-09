@@ -1117,6 +1117,12 @@ select {
   transform: translateY(-4px);
 }
 
+.assistant-widget.open .assistant-trigger {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px) scale(0.94);
+}
+
 .assistant-status-dot {
   animation: assistantPulse 2.4s ease infinite;
   background: #54f0d8;
@@ -1225,14 +1231,16 @@ select {
   background: color-mix(in srgb, var(--surface) 96%, transparent);
   border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--line));
   border-radius: 8px;
-  bottom: 0;
+  bottom: 10px;
   box-shadow: 0 36px 96px rgba(0, 0, 0, 0.4);
   display: grid;
-  left: 0;
+  left: 108px;
   max-height: min(82vh, 860px);
   overflow: hidden;
+  pointer-events: auto;
   position: absolute;
   width: min(430px, calc(100vw - 36px));
+  z-index: 3;
 }
 
 .assistant-panel-header {
@@ -1405,8 +1413,11 @@ select {
   color: var(--text);
   margin-top: 12px;
   min-width: 0;
+  pointer-events: auto;
   padding: 13px 14px;
+  position: relative;
   width: 100%;
+  z-index: 1;
 }
 
 .assistant-step-card textarea {
@@ -2267,6 +2278,8 @@ select {
   }
 
   .assistant-panel {
+    bottom: 96px;
+    left: 0;
     width: min(100vw - 24px, 420px);
   }
 

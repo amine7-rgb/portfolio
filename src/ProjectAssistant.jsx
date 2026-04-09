@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { translations } from "./i18n.js";
 import {
   assistantProjectTypes,
@@ -45,6 +45,7 @@ function ProjectAssistant({ language, budgetOptions, onToast }) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const ideaInputRef = useRef(null);
 
   const canGenerate = draft.rawIdea.trim().length > 0;
   const previewBrief = useMemo(() => (canGenerate ? generateProjectBrief(draft) : null), [canGenerate, draft]);
@@ -79,6 +80,18 @@ function ProjectAssistant({ language, budgetOptions, onToast }) {
       clearTimeout(showTimer);
       clearTimeout(hideTimer);
     };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) {
+      return undefined;
+    }
+
+    const timer = setTimeout(() => {
+      ideaInputRef.current?.focus();
+    }, 180);
+
+    return () => clearTimeout(timer);
   }, [open]);
 
   useEffect(() => {
@@ -312,6 +325,8 @@ function ProjectAssistant({ language, budgetOptions, onToast }) {
                 <h4>{copy.ideaTitle}</h4>
                 <p>{copy.ideaPrompt}</p>
                 <textarea
+                  ref={ideaInputRef}
+                  autoFocus
                   rows="5"
                   value={draft.rawIdea}
                   placeholder={copy.ideaPlaceholder}
