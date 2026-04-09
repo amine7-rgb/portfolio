@@ -156,6 +156,10 @@ export const translations = {
       name: "Mohamed Amine Oudi",
       copy: "Freelance full-stack engineer for web platforms, automation, AI chatbots, and deployment-ready products.",
       linksLabel: "Footer contact links",
+      qrEyebrow: "Quick access",
+      qrTitle: "Scan to open my portfolio",
+      qrCopy: "Use your camera to open the live website instantly.",
+      qrAlt: "QR code linking to Mohamed Amine Oudi portfolio",
       links: {
         email: "Email",
         linkedin: "LinkedIn",
@@ -279,6 +283,10 @@ export const translations = {
       name: "Mohamed Amine Oudi",
       copy: "Freelance full-stack engineer for web platforms, automation, AI chatbots, and deployment-ready products.",
       linksLabel: "Footer contact links",
+      qrEyebrow: "Quick access",
+      qrTitle: "Scan to open my portfolio",
+      qrCopy: "Use your camera to open the live website instantly.",
+      qrAlt: "QR code linking to Mohamed Amine Oudi portfolio",
       links: {
         email: "Email",
         linkedin: "LinkedIn",

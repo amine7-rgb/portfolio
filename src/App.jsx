@@ -13,6 +13,8 @@ const profileLinks = {
   linkedin: "https://www.linkedin.com/in/mohamedamine-eloudi-aa47b6198/"
 };
 
+const portfolioUrl = "https://med-amineoudi.vercel.app";
+
 const stacks = [
   "Node.js",
   "React.js",
@@ -449,6 +451,16 @@ function App() {
               <p>{t.footer.copy}</p>
             </div>
           </div>
+          <a className="footer-qr" href={portfolioUrl} target="_blank" rel="noreferrer" aria-label={t.footer.qrAlt}>
+            <div className="footer-qr-copy">
+              <span>{t.footer.qrEyebrow}</span>
+              <strong>{t.footer.qrTitle}</strong>
+              <p>{t.footer.qrCopy}</p>
+            </div>
+            <div className="footer-qr-frame">
+              <img src="/amine-portfolio-qr.svg" alt={t.footer.qrAlt} loading="lazy" />
+            </div>
+          </a>
         </div>
         <div className="footer-bottom">
           <p>{t.footer.copyright}</p>
