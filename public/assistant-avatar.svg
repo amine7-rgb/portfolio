@@ -1,0 +1,41 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="avatarBg" x1="78" y1="62" x2="430" y2="456" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#10232D" />
+      <stop offset="1" stop-color="#061017" />
+    </linearGradient>
+    <radialGradient id="avatarGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(186 138) rotate(36.4) scale(258.505)">
+      <stop stop-color="#7CFFF0" stop-opacity="0.8" />
+      <stop offset="1" stop-color="#7CFFF0" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="avatarAccent" x1="165" y1="156" x2="349" y2="356" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6BFFF0" />
+      <stop offset="1" stop-color="#00A6C8" />
+    </linearGradient>
+    <linearGradient id="avatarSoft" x1="214" y1="160" x2="303" y2="303" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F6FFFD" />
+      <stop offset="1" stop-color="#C9F8F0" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="136" fill="url(#avatarBg)" />
+  <rect x="24" y="24" width="464" height="464" rx="112" stroke="rgba(255,255,255,0.08)" stroke-width="2" />
+  <circle cx="256" cy="230" r="176" fill="url(#avatarGlow)" />
+  <path d="M105 400C142 332 198 296 256 296C314 296 370 332 407 400" fill="#0C1A22" stroke="rgba(255,255,255,0.12)" stroke-width="10" stroke-linecap="round"/>
+  <path d="M168 402C198 355 224 336 256 336C288 336 314 355 344 402" stroke="url(#avatarAccent)" stroke-width="18" stroke-linecap="round"/>
+  <path d="M162 208C162 155.533 204.533 113 257 113C309.467 113 352 155.533 352 208V217C352 269.467 309.467 312 257 312C204.533 312 162 269.467 162 217V208Z" fill="#0E1E27" stroke="rgba(255,255,255,0.1)" stroke-width="10"/>
+  <path d="M191 186C191 149.549 220.549 120 257 120C293.451 120 323 149.549 323 186V212C323 248.451 293.451 278 257 278C220.549 278 191 248.451 191 212V186Z" fill="url(#avatarSoft)"/>
+  <path d="M209 170C221 151 240 141 256 141C272 141 292 151 304 170" stroke="#D8FFF8" stroke-width="10" stroke-linecap="round"/>
+  <rect x="205" y="198" width="40" height="18" rx="9" fill="#0C1A22"/>
+  <rect x="267" y="198" width="40" height="18" rx="9" fill="#0C1A22"/>
+  <path d="M229 244C243 258 270 258 284 244" stroke="#0C1A22" stroke-width="11" stroke-linecap="round"/>
+  <path d="M186 172C196 154 220 138 256 138C292 138 317 154 328 172" stroke="url(#avatarAccent)" stroke-width="12" stroke-linecap="round"/>
+  <path d="M235 311H279V351C279 364.255 268.255 375 255 375C241.745 375 231 364.255 231 351V315C231 312.791 232.791 311 235 311Z" fill="#0F212B"/>
+  <path d="M212 352C228 339 241 334 256 334C271 334 284 339 300 352" stroke="#D8FFF8" stroke-opacity="0.66" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="385" cy="124" r="24" fill="#102630" stroke="rgba(255,255,255,0.12)" stroke-width="6"/>
+  <path d="M385 112V136" stroke="url(#avatarAccent)" stroke-width="6" stroke-linecap="round"/>
+  <path d="M373 124H397" stroke="url(#avatarAccent)" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="129" cy="154" r="12" fill="#7CFFF0" fill-opacity="0.34"/>
+  <circle cx="400" cy="340" r="10" fill="#00A6C8" fill-opacity="0.42"/>
+  <path d="M111 353C136 347 150 332 153 307" stroke="rgba(124,255,240,0.42)" stroke-width="8" stroke-linecap="round"/>
+  <path d="M365 386C383 373 393 356 396 333" stroke="rgba(124,255,240,0.26)" stroke-width="8" stroke-linecap="round"/>
+</svg>

@@ -6,6 +6,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import mongoose from "mongoose";
 import nodemailer from "nodemailer";
+import { formatAssistantBriefHtml, formatAssistantBriefText } from "../lib/assistantBrief.js";
 
 dotenv.config();
 
@@ -33,6 +34,44 @@ const contactSchema = new mongoose.Schema(
 );
 
 const Contact = mongoose.model("Contact", contactSchema);
+
+const assistantBriefSchema = new mongoose.Schema(
+  {
+    language: { type: String, trim: true, maxlength: 12, default: "en" },
+    projectType: { type: String, trim: true, maxlength: 80 },
+    rawIdea: { type: String, required: true, trim: true, maxlength: 4000 },
+    audience: { type: String, trim: true, maxlength: 600 },
+    firstAction: { type: String, trim: true, maxlength: 600 },
+    requirements: [{ type: String, trim: true, maxlength: 120 }],
+    timeline: { type: String, trim: true, maxlength: 120 },
+    brief: {
+      projectType: { type: String, trim: true, maxlength: 120 },
+      overview: { type: String, trim: true, maxlength: 2000 },
+      businessGoal: { type: String, trim: true, maxlength: 2000 },
+      targetUsers: { type: String, trim: true, maxlength: 2000 },
+      coreFeatures: [{ type: String, trim: true, maxlength: 240 }],
+      pagesModules: [{ type: String, trim: true, maxlength: 240 }],
+      adminBackoffice: { type: String, trim: true, maxlength: 2000 },
+      aiAutomation: { type: String, trim: true, maxlength: 2000 },
+      suggestedStack: [{ type: String, trim: true, maxlength: 180 }],
+      deployment: { type: String, trim: true, maxlength: 2000 },
+      complexity: { type: String, trim: true, maxlength: 80 },
+      openQuestions: [{ type: String, trim: true, maxlength: 320 }],
+      requirementSummary: [{ type: String, trim: true, maxlength: 240 }]
+    },
+    lead: {
+      name: { type: String, required: true, trim: true, maxlength: 120 },
+      email: { type: String, required: true, trim: true, lowercase: true, maxlength: 180 },
+      company: { type: String, trim: true, maxlength: 180 },
+      budget: { type: String, trim: true, maxlength: 120 },
+      notes: { type: String, trim: true, maxlength: 3000 }
+    },
+    source: { type: String, default: "assistant-local" }
+  },
+  { timestamps: true }
+);
+
+const AssistantBrief = mongoose.models.AssistantBrief || mongoose.model("AssistantBrief", assistantBriefSchema);
 
 const isEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 const isMongoConnected = () => mongoose.connection.readyState === 1;
@@ -201,6 +240,68 @@ app.post("/api/contact", async (req, res) => {
   } catch (error) {
     console.error("Contact submission failed", error);
     res.status(500).json({ error: "Unable to send your message right now." });
+  }
+});
+
+app.post("/api/assistant-brief", async (req, res) => {
+  try {
+    const payload = req.body || {};
+    const draft = payload.draft || {};
+    const lead = payload.lead || {};
+    const brief = payload.brief || {};
+
+    if (!draft.rawIdea || !lead.name || !lead.email || !brief.overview) {
+      return res.status(400).json({ error: "Raw idea, lead information, and generated brief are required." });
+    }
+
+    if (!isEmail(lead.email)) {
+      return res.status(400).json({ error: "Please provide a valid email address." });
+    }
+
+    let record = null;
+
+    if (isMongoConnected()) {
+      record = await AssistantBrief.create({
+        language: payload.language || "en",
+        projectType: draft.projectType,
+        rawIdea: draft.rawIdea,
+        audience: draft.audience,
+        firstAction: draft.firstAction,
+        requirements: draft.requirements || [],
+        timeline: draft.timeline,
+        brief,
+        lead,
+        source: payload.source || "assistant-local"
+      });
+    } else {
+      console.warn("MongoDB is not connected. Assistant brief was not saved to the database.");
+    }
+
+    const mailer = createMailer();
+
+    if (mailer) {
+      await mailer.sendMail({
+        from: `"Idea to Brief Assistant" <${process.env.SMTP_USER}>`,
+        replyTo: lead.email,
+        to: contactToEmail,
+        subject: `New AI project brief from ${lead.name}`,
+        text: formatAssistantBriefText({ lead, draft: { ...draft, language: payload.language }, brief }),
+        html: formatAssistantBriefHtml({ lead, draft: { ...draft, language: payload.language }, brief })
+      });
+    } else {
+      console.warn("SMTP is not configured. No assistant brief email was sent.");
+    }
+
+    if (!record && !mailer) {
+      return res.status(503).json({
+        error: "Assistant brief service is not configured. Set MongoDB or SMTP settings in .env."
+      });
+    }
+
+    return res.status(201).json({ ok: true, id: record?._id || null });
+  } catch (error) {
+    console.error("Assistant brief submission failed", error);
+    return res.status(500).json({ error: "Unable to send the generated brief right now." });
   }
 });
 

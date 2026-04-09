@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { translations } from "./i18n.js";
+import ProjectAssistant from "./ProjectAssistant.jsx";
 
 const heroImages = [
   "https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=1800&q=80",
@@ -531,6 +532,7 @@ function App() {
           </span>
         </button>
       </div>
+      <ProjectAssistant language={language} budgetOptions={t.contact.budgetOptions} onToast={setToast} />
       {toast && (
         <div className={`toast ${toast.type}`} role="status" aria-live="polite">
           <span />
