@@ -186,6 +186,19 @@ const collectRequirements = (draft) =>
   ]);
 
 const requirementList = (requirements) => requirements.map((key) => requirementDescriptions[key]).filter(Boolean);
+const humanList = (items = []) => {
+  const values = items.map((item) => String(item || "").trim()).filter(Boolean);
+
+  if (values.length <= 1) {
+    return values[0] || "";
+  }
+
+  if (values.length === 2) {
+    return `${values[0]} and ${values[1]}`;
+  }
+
+  return `${values.slice(0, -1).join(", ")}, and ${values.at(-1)}`;
+};
 
 const addConditionalItems = (requirements, features, pages, stack) => {
   if (requirements.includes("payment")) {
@@ -354,4 +367,30 @@ export const generateProjectBrief = (draft) => {
     requirementSummary: requirementList(requirements),
     rawIdeaLabel: titleCase(projectType)
   };
+};
+
+export const buildProjectBriefParagraph = ({ brief, draft = {} }) => {
+  if (!brief) {
+    return "";
+  }
+
+  const users = brief.targetUsers || "the target users and internal team";
+  const features = humanList((brief.coreFeatures || []).slice(0, 4));
+  const modules = humanList((brief.pagesModules || []).slice(0, 4));
+  const stack = humanList((brief.suggestedStack || []).slice(0, 4));
+  const requirementSummary = humanList((brief.requirementSummary || []).slice(0, 4));
+  const timeline = draft.timeline || "a flexible timeline";
+
+  const parts = [
+    `This project is scoped as a ${String(brief.projectType || "web product").toLowerCase()} designed to ${String(brief.businessGoal || "deliver a clear and valuable product experience").replace(/[.!?]+$/, "").toLowerCase()}.`,
+    `It is intended for ${String(users).replace(/[.!?]+$/, "")}, with an initial experience focused on ${String(brief.overview || "a clear user journey").replace(/[.!?]+$/, "").toLowerCase()}.`,
+    features
+      ? `The first release should include ${features}, supported by modules such as ${modules || "the key user and admin flows"}.`
+      : "",
+    requirementSummary ? `Important requirements already identified include ${requirementSummary}.` : "",
+    stack ? `A strong delivery approach for this scope would use ${stack}, with deployment and CI/CD prepared for ${timeline.toLowerCase()}.` : "",
+    brief.aiAutomation ? `AI and automation can add value through ${String(brief.aiAutomation).replace(/[.!?]+$/, "").toLowerCase()}.` : ""
+  ];
+
+  return parts.filter(Boolean).join(" ");
 };

@@ -1621,6 +1621,13 @@ select {
   gap: 8px;
 }
 
+.assistant-form-help {
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 600;
+  line-height: 1.6;
+}
+
 .assistant-success {
   display: grid;
   gap: 12px;

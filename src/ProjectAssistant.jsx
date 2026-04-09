@@ -4,6 +4,7 @@ import {
   assistantProjectTypes,
   assistantRequirementOptions,
   assistantTimelineOptions,
+  buildProjectBriefParagraph,
   generateProjectBrief
 } from "./projectAssistant.js";
 
@@ -28,6 +29,7 @@ const initialLead = {
   email: "",
   company: "",
   budget: "",
+  briefParagraph: "",
   notes: ""
 };
 
@@ -46,6 +48,7 @@ function ProjectAssistant({ language, budgetOptions, onToast }) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [briefParagraphDirty, setBriefParagraphDirty] = useState(false);
   const ideaInputRef = useRef(null);
   const audienceInputRef = useRef(null);
   const firstActionInputRef = useRef(null);
@@ -53,6 +56,10 @@ function ProjectAssistant({ language, budgetOptions, onToast }) {
 
   const canGenerate = draft.rawIdea.trim().length > 0;
   const previewBrief = useMemo(() => (canGenerate ? generateProjectBrief(draft) : null), [canGenerate, draft]);
+  const generatedBriefParagraph = useMemo(
+    () => (brief ? buildProjectBriefParagraph({ brief, draft }) : ""),
+    [brief, draft]
+  );
   const selectedType = assistantProjectTypes.find((item) => item.id === draft.projectType) || assistantProjectTypes.at(-1);
   const generationKey = useMemo(() => JSON.stringify({ language, draft }), [draft, language]);
   const progressValue = step >= totalSteps ? totalSteps : step + 1;
@@ -149,6 +156,20 @@ function ProjectAssistant({ language, budgetOptions, onToast }) {
   }, [brief, open, step, submitted]);
 
   useEffect(() => {
+    if (!generatedBriefParagraph || briefParagraphDirty) {
+      return;
+    }
+
+    setLead((current) => {
+      if (current.briefParagraph === generatedBriefParagraph) {
+        return current;
+      }
+
+      return { ...current, briefParagraph: generatedBriefParagraph };
+    });
+  }, [briefParagraphDirty, generatedBriefParagraph]);
+
+  useEffect(() => {
     if (step < totalSteps || !canGenerate) {
       return undefined;
     }
@@ -208,6 +229,7 @@ function ProjectAssistant({ language, budgetOptions, onToast }) {
     setStep(0);
     setSubmitted(false);
     setSubmitting(false);
+    setBriefParagraphDirty(false);
   };
 
   const openAssistant = () => {
@@ -241,6 +263,10 @@ function ProjectAssistant({ language, budgetOptions, onToast }) {
   };
 
   const handleLeadChange = (event) => {
+    if (event.target.name === "briefParagraph") {
+      setBriefParagraphDirty(true);
+    }
+
     setLead((current) => ({ ...current, [event.target.name]: event.target.value }));
   };
 
@@ -263,6 +289,7 @@ function ProjectAssistant({ language, budgetOptions, onToast }) {
           language,
           draft,
           lead,
+          finalBriefParagraph: lead.briefParagraph || generatedBriefParagraph,
           brief,
           source: "idea-assistant"
         })
@@ -675,6 +702,16 @@ function ProjectAssistant({ language, budgetOptions, onToast }) {
                                 </option>
                               ))}
                             </select>
+                          </label>
+                          <label className="assistant-form-wide">
+                            {copy.form.briefParagraph}
+                            <span className="assistant-form-help">{copy.form.briefParagraphHelp}</span>
+                            <textarea
+                              name="briefParagraph"
+                              rows="7"
+                              value={lead.briefParagraph}
+                              onChange={handleLeadChange}
+                            />
                           </label>
                           <label className="assistant-form-wide">
                             {copy.form.notes}

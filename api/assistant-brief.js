@@ -35,6 +35,7 @@ const assistantBriefSchema = new mongoose.Schema(
       email: { type: String, required: true, trim: true, lowercase: true, maxlength: 180 },
       company: { type: String, trim: true, maxlength: 180 },
       budget: { type: String, trim: true, maxlength: 120 },
+      briefParagraph: { type: String, trim: true, maxlength: 6000 },
       notes: { type: String, trim: true, maxlength: 3000 }
     },
     source: { type: String, default: "assistant-vercel" }
@@ -94,12 +95,16 @@ export default async function handler(req, res) {
     const draft = payload.draft || {};
     const lead = payload.lead || {};
     const brief = payload.brief || {};
+    const normalizedLead = {
+      ...lead,
+      briefParagraph: String(lead.briefParagraph || payload.finalBriefParagraph || "").trim()
+    };
 
-    if (!draft.rawIdea || !lead.name || !lead.email || !brief.overview) {
+    if (!draft.rawIdea || !normalizedLead.name || !normalizedLead.email || !brief.overview) {
       return res.status(400).json({ error: "Raw idea, lead information, and generated brief are required." });
     }
 
-    if (!isEmail(lead.email)) {
+    if (!isEmail(normalizedLead.email)) {
       return res.status(400).json({ error: "Please provide a valid email address." });
     }
 
@@ -119,7 +124,7 @@ export default async function handler(req, res) {
           requirements: draft.requirements || [],
           timeline: draft.timeline,
           brief,
-          lead,
+          lead: normalizedLead,
           source: payload.source || "assistant-vercel"
         });
       } catch (error) {
@@ -134,11 +139,11 @@ export default async function handler(req, res) {
       try {
         await mailer.sendMail({
           from: `"Idea to Brief Assistant" <${env("SMTP_USER")}>`,
-          replyTo: lead.email,
+          replyTo: normalizedLead.email,
           to: contactToEmail,
-          subject: `New AI project brief from ${lead.name}`,
-          text: formatAssistantBriefText({ lead, draft: { ...draft, language: payload.language }, brief }),
-          html: formatAssistantBriefHtml({ lead, draft: { ...draft, language: payload.language }, brief })
+          subject: `New AI project brief from ${normalizedLead.name}`,
+          text: formatAssistantBriefText({ lead: normalizedLead, draft: { ...draft, language: payload.language }, brief }),
+          html: formatAssistantBriefHtml({ lead: normalizedLead, draft: { ...draft, language: payload.language }, brief })
         });
         delivered = true;
       } catch (error) {

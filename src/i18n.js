@@ -234,6 +234,8 @@ export const translations = {
         company: "Company",
         budget: "Budget",
         budgetPlaceholder: "Select a range",
+        briefParagraph: "Client-ready brief paragraph",
+        briefParagraphHelp: "You can edit this generated paragraph before sending it.",
         notes: "Additional note"
       }
     },
