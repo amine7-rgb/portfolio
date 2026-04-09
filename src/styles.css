@@ -1438,7 +1438,7 @@ select {
 .assistant-summary-grid {
   display: grid;
   gap: 12px;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
 }
 
 .assistant-summary-grid article {
@@ -1460,6 +1460,29 @@ select {
 .assistant-summary-grid strong {
   font-size: 0.96rem;
   line-height: 1.4;
+}
+
+.assistant-engine-note {
+  background: color-mix(in srgb, var(--panel) 84%, transparent);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.assistant-engine-note span {
+  color: var(--accent);
+  display: block;
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.assistant-engine-note p {
+  color: var(--muted);
+  line-height: 1.7;
+  margin: 0;
 }
 
 .assistant-brief {

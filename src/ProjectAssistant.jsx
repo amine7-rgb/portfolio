@@ -39,12 +39,17 @@ function ProjectAssistant({ language, budgetOptions, onToast }) {
   const [step, setStep] = useState(0);
   const [draft, setDraft] = useState(initialDraft);
   const [lead, setLead] = useState(initialLead);
+  const [brief, setBrief] = useState(null);
+  const [generationMode, setGenerationMode] = useState("fallback");
+  const [generationModel, setGenerationModel] = useState("local-structured");
+  const [isGenerating, setIsGenerating] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const canGenerate = draft.rawIdea.trim().length > 0;
-  const brief = useMemo(() => (canGenerate ? generateProjectBrief(draft) : null), [canGenerate, draft]);
+  const previewBrief = useMemo(() => (canGenerate ? generateProjectBrief(draft) : null), [canGenerate, draft]);
   const selectedType = assistantProjectTypes.find((item) => item.id === draft.projectType) || assistantProjectTypes.at(-1);
+  const generationKey = useMemo(() => JSON.stringify({ language, draft }), [draft, language]);
 
   useEffect(() => {
     if (open) {
@@ -76,9 +81,63 @@ function ProjectAssistant({ language, budgetOptions, onToast }) {
     };
   }, [open]);
 
+  useEffect(() => {
+    if (step < 5 || !canGenerate) {
+      return undefined;
+    }
+
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      setIsGenerating(true);
+
+      try {
+        const response = await fetch("/api/assistant-generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ language, draft })
+        });
+
+        if (!response.ok) {
+          throw new Error("Assistant generation failed");
+        }
+
+        const data = await response.json();
+
+        if (cancelled) {
+          return;
+        }
+
+        setBrief(data.brief || previewBrief);
+        setGenerationMode(data.mode || "fallback");
+        setGenerationModel(data.model || "local-structured");
+      } catch {
+        if (cancelled) {
+          return;
+        }
+
+        setBrief(previewBrief);
+        setGenerationMode("fallback");
+        setGenerationModel("local-structured");
+      } finally {
+        if (!cancelled) {
+          setIsGenerating(false);
+        }
+      }
+    }, 280);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [canGenerate, draft, generationKey, language, previewBrief, step]);
+
   const resetAssistant = () => {
     setDraft(initialDraft);
     setLead(initialLead);
+    setBrief(null);
+    setGenerationMode("fallback");
+    setGenerationModel("local-structured");
+    setIsGenerating(false);
     setStep(0);
     setSubmitted(false);
     setSubmitting(false);
@@ -96,6 +155,7 @@ function ProjectAssistant({ language, budgetOptions, onToast }) {
 
   const updateDraft = (field, value) => {
     setDraft((current) => ({ ...current, [field]: value }));
+    setSubmitted(false);
   };
 
   const toggleRequirement = (value) => {
@@ -105,6 +165,7 @@ function ProjectAssistant({ language, budgetOptions, onToast }) {
         ? current.requirements.filter((item) => item !== value)
         : [...current.requirements, value]
     }));
+    setSubmitted(false);
   };
 
   const handleLeadChange = (event) => {
@@ -114,7 +175,7 @@ function ProjectAssistant({ language, budgetOptions, onToast }) {
   const submitBrief = async (event) => {
     event.preventDefault();
 
-    if (!lead.name || !lead.email || !brief) {
+    if (!lead.name || !lead.email || !brief || isGenerating) {
       onToast?.({ type: "error", message: copy.submitError });
       return;
     }
@@ -319,7 +380,7 @@ function ProjectAssistant({ language, budgetOptions, onToast }) {
               {step >= 4 ? (
                 <div className="assistant-user-reply">
                   <span>{copy.requirementsTitle}</span>
-                  <p>{brief?.requirementSummary?.join(" / ") || copy.noSpecialRequirements}</p>
+                  <p>{(brief?.requirementSummary || previewBrief?.requirementSummary || []).join(" / ") || copy.noSpecialRequirements}</p>
                 </div>
               ) : null}
 
@@ -365,104 +426,117 @@ function ProjectAssistant({ language, budgetOptions, onToast }) {
                 </div>
               ) : null}
 
-              {step >= 5 && brief ? (
+              {step >= 5 ? (
                 <>
                   <div className="assistant-message">
-                    <span className="assistant-bubble">{copy.generatedTitle}</span>
-                    <p>{copy.generatedCopy}</p>
+                    <span className="assistant-bubble">{isGenerating ? copy.generatingTitle : copy.generatedTitle}</span>
+                    <p>{isGenerating ? copy.generatingCopy : copy.generatedCopy}</p>
                   </div>
 
-                  <div className="assistant-summary-grid">
-                    <article>
-                      <span>{copy.summaryLabels.projectType}</span>
-                      <strong>{selectedType.label}</strong>
-                    </article>
-                    <article>
-                      <span>{copy.summaryLabels.timeline}</span>
-                      <strong>{draft.timeline || assistantTimelineOptions.at(-1)}</strong>
-                    </article>
-                    <article>
-                      <span>{copy.summaryLabels.complexity}</span>
-                      <strong>{brief.complexity}</strong>
-                    </article>
-                  </div>
-
-                  <div className="assistant-brief">
-                    <article>
-                      <span>{copy.sections.overview}</span>
-                      <p>{brief.overview}</p>
-                    </article>
-                    <article>
-                      <span>{copy.sections.goal}</span>
-                      <p>{brief.businessGoal}</p>
-                    </article>
-                    <article>
-                      <span>{copy.sections.users}</span>
-                      <p>{brief.targetUsers}</p>
-                    </article>
-                    <article>
-                      <span>{copy.sections.features}</span>
-                      <ul>
-                        {brief.coreFeatures.map((item) => (
-                          <li key={item}>{item}</li>
-                        ))}
-                      </ul>
-                    </article>
-                    <article>
-                      <span>{copy.sections.modules}</span>
-                      <ul>
-                        {brief.pagesModules.map((item) => (
-                          <li key={item}>{item}</li>
-                        ))}
-                      </ul>
-                    </article>
-                    <article>
-                      <span>{copy.sections.admin}</span>
-                      <p>{brief.adminBackoffice}</p>
-                    </article>
-                    <article>
-                      <span>{copy.sections.ai}</span>
-                      <p>{brief.aiAutomation}</p>
-                    </article>
-                    <article>
-                      <span>{copy.sections.stack}</span>
-                      <div className="assistant-brief-tags">
-                        {brief.suggestedStack.map((item) => (
-                          <strong key={item}>{item}</strong>
-                        ))}
+                  {brief ? (
+                    <>
+                      <div className="assistant-summary-grid">
+                        <article>
+                          <span>{copy.summaryLabels.projectType}</span>
+                          <strong>{selectedType.label}</strong>
+                        </article>
+                        <article>
+                          <span>{copy.summaryLabels.timeline}</span>
+                          <strong>{draft.timeline || assistantTimelineOptions.at(-1)}</strong>
+                        </article>
+                        <article>
+                          <span>{copy.summaryLabels.complexity}</span>
+                          <strong>{brief.complexity}</strong>
+                        </article>
+                        <article>
+                          <span>{copy.summaryLabels.engine}</span>
+                          <strong>{generationMode === "openai" ? copy.aiMode : copy.backupMode}</strong>
+                        </article>
                       </div>
-                    </article>
-                    <article>
-                      <span>{copy.sections.deployment}</span>
-                      <p>{brief.deployment}</p>
-                    </article>
-                    <article>
-                      <span>{copy.sections.questions}</span>
-                      <ul>
-                        {brief.openQuestions.map((item) => (
-                          <li key={item}>{item}</li>
-                        ))}
-                      </ul>
-                    </article>
-                  </div>
 
-                  <div className="assistant-refine">
-                    <p>{copy.refineLabel}</p>
-                    <div className="assistant-chip-grid">
-                      {assistantRequirementOptions.map((item) => (
-                        <button
-                          key={item.id}
-                          className={draft.requirements.includes(item.id) ? "active" : ""}
-                          type="button"
-                          onClick={() => toggleRequirement(item.id)}
-                        >
-                          {item.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                      <div className="assistant-engine-note">
+                        <span>{copy.engineLabel}</span>
+                        <p>{generationMode === "openai" ? `${copy.engineAiCopy} ${generationModel}.` : copy.engineFallbackCopy}</p>
+                      </div>
 
-                  {submitted ? (
+                      <div className="assistant-brief">
+                        <article>
+                          <span>{copy.sections.overview}</span>
+                          <p>{brief.overview}</p>
+                        </article>
+                        <article>
+                          <span>{copy.sections.goal}</span>
+                          <p>{brief.businessGoal}</p>
+                        </article>
+                        <article>
+                          <span>{copy.sections.users}</span>
+                          <p>{brief.targetUsers}</p>
+                        </article>
+                        <article>
+                          <span>{copy.sections.features}</span>
+                          <ul>
+                            {brief.coreFeatures.map((item) => (
+                              <li key={item}>{item}</li>
+                            ))}
+                          </ul>
+                        </article>
+                        <article>
+                          <span>{copy.sections.modules}</span>
+                          <ul>
+                            {brief.pagesModules.map((item) => (
+                              <li key={item}>{item}</li>
+                            ))}
+                          </ul>
+                        </article>
+                        <article>
+                          <span>{copy.sections.admin}</span>
+                          <p>{brief.adminBackoffice}</p>
+                        </article>
+                        <article>
+                          <span>{copy.sections.ai}</span>
+                          <p>{brief.aiAutomation}</p>
+                        </article>
+                        <article>
+                          <span>{copy.sections.stack}</span>
+                          <div className="assistant-brief-tags">
+                            {brief.suggestedStack.map((item) => (
+                              <strong key={item}>{item}</strong>
+                            ))}
+                          </div>
+                        </article>
+                        <article>
+                          <span>{copy.sections.deployment}</span>
+                          <p>{brief.deployment}</p>
+                        </article>
+                        <article>
+                          <span>{copy.sections.questions}</span>
+                          <ul>
+                            {brief.openQuestions.map((item) => (
+                              <li key={item}>{item}</li>
+                            ))}
+                          </ul>
+                        </article>
+                      </div>
+
+                      <div className="assistant-refine">
+                        <p>{copy.refineLabel}</p>
+                        <div className="assistant-chip-grid">
+                          {assistantRequirementOptions.map((item) => (
+                            <button
+                              key={item.id}
+                              className={draft.requirements.includes(item.id) ? "active" : ""}
+                              type="button"
+                              onClick={() => toggleRequirement(item.id)}
+                            >
+                              {item.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  ) : null}
+
+                  {brief ? submitted ? (
                     <div className="assistant-success">
                       <span className="assistant-bubble assistant-bubble-brand">{copy.successTitle}</span>
                       <p>{copy.successCopy}</p>
@@ -507,12 +581,12 @@ function ProjectAssistant({ language, budgetOptions, onToast }) {
                         <button className="secondary-button" type="button" onClick={resetAssistant}>
                           {copy.startOver}
                         </button>
-                        <button className="primary-button" type="submit" disabled={submitting}>
+                        <button className="primary-button" type="submit" disabled={submitting || isGenerating}>
                           {submitting ? copy.sending : copy.sendBrief}
                         </button>
                       </div>
                     </form>
-                  )}
+                  ) : null}
                 </>
               ) : null}
             </div>

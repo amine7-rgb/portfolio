@@ -185,6 +185,8 @@ export const translations = {
       continue: "Continue",
       skip: "Skip for now",
       generateBrief: "Generate my brief",
+      generatingTitle: "Thinking through your project",
+      generatingCopy: "The assistant is shaping a clearer version of the idea and checking the best structure for the brief.",
       generatedTitle: "Your first structured brief is ready",
       generatedCopy: "This is a stronger version of the idea, ready for discussion, estimation, and project planning.",
       noSpecialRequirements: "No extra requirements selected yet.",
@@ -203,8 +205,14 @@ export const translations = {
       summaryLabels: {
         projectType: "Project type",
         timeline: "Timeline",
-        complexity: "Complexity"
+        complexity: "Complexity",
+        engine: "Engine"
       },
+      aiMode: "OpenAI brief",
+      backupMode: "Structured backup",
+      engineLabel: "Generation mode",
+      engineAiCopy: "This brief was generated with the live OpenAI model",
+      engineFallbackCopy: "The assistant is using the local structured backup until the OpenAI key is configured or available.",
       sections: {
         overview: "Project overview",
         goal: "Business goal",

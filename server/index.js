@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import mongoose from "mongoose";
 import nodemailer from "nodemailer";
 import { formatAssistantBriefHtml, formatAssistantBriefText } from "../lib/assistantBrief.js";
+import { generateAssistantBrief } from "../lib/assistantGeneration.js";
 
 dotenv.config();
 
@@ -240,6 +241,36 @@ app.post("/api/contact", async (req, res) => {
   } catch (error) {
     console.error("Contact submission failed", error);
     res.status(500).json({ error: "Unable to send your message right now." });
+  }
+});
+
+app.post("/api/assistant-generate", async (req, res) => {
+  try {
+    const payload = req.body || {};
+    const draft = payload.draft || {};
+    const language = payload.language || "en";
+
+    if (!draft.rawIdea || !String(draft.rawIdea).trim()) {
+      return res.status(400).json({ error: "Project idea is required." });
+    }
+
+    const result = await generateAssistantBrief({
+      draft,
+      language,
+      apiKey: process.env.OPENAI_API_KEY || "",
+      model: process.env.OPENAI_MODEL || "gpt-5.4-mini"
+    });
+
+    return res.status(200).json({
+      ok: true,
+      brief: result.brief,
+      mode: result.mode,
+      reason: result.reason,
+      model: result.model
+    });
+  } catch (error) {
+    console.error("Assistant brief generation failed", error);
+    return res.status(500).json({ error: "Unable to generate the project brief right now." });
   }
 });
 
