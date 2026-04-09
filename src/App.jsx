@@ -305,11 +305,16 @@ function App() {
           <div className="project-grid">
             {projectCards.map((project, index) => (
               <article className={`project-card case-study-card ${index === 0 ? "featured" : ""}`} key={project.title}>
-                <div className="project-media">
+                <div className={`project-media ${project.mediaContain ? "contain-media" : ""}`}>
                   {project.mediaType === "video" ? (
                     <video src={project.image} autoPlay muted loop playsInline aria-label={project.title} />
                   ) : (
-                    <img src={project.image} alt={project.title} loading="lazy" />
+                    <img
+                      className={project.mediaContain ? "media-contain" : ""}
+                      src={project.image}
+                      alt={project.title}
+                      loading="lazy"
+                    />
                   )}
                   {project.year && <span className="project-year">{project.year}</span>}
                 </div>
@@ -328,13 +333,27 @@ function App() {
                       <span key={tech}>{tech}</span>
                     ))}
                   </div>
-                  <div className="project-actions">
-                    {project.links?.map((link) => (
-                      <a href={link.href} key={link.href} target="_blank" rel="noreferrer">
-                        {link.label}
-                      </a>
-                    ))}
-                  </div>
+                  {project.links?.length ? (
+                    <div className="project-actions">
+                      {project.links.map((link) => (
+                        <a href={link.href} key={link.href} target="_blank" rel="noreferrer">
+                          {link.label}
+                        </a>
+                      ))}
+                    </div>
+                  ) : null}
+                  {project.proofLinks?.length ? (
+                    <div className="project-proof-group">
+                      <span className="project-proof-label">{project.proofsLabel || "Award proof"}</span>
+                      <div className="project-proof-links">
+                        {project.proofLinks.map((link) => (
+                          <a href={link.href} key={link.href} target="_blank" rel="noreferrer">
+                            {link.label}
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
               </article>
             ))}

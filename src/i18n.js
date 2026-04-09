@@ -76,13 +76,18 @@ export const translations = {
           description:
             "Agricole is a modern smart-farming platform built for intelligent land management. It includes a dashboard for field statistics such as temperature, humidity, sensor readings, and farmer objectives, connected to Arduino Uno sensors. The platform also includes a marketplace to sell or rent agricultural equipment and field products, an AI optimization module that receives a land schema and recommends the required equipment count and placement to reduce cost using KNN and SVM, image recognition to identify plants and return useful descriptions, and facial-recognition login designed to make access easier for older farmers.",
           technologies: ["React.js", "Node.js", "MongoDB", "Arduino Uno", "KNN", "SVM", "AI Vision", "Face Recognition"],
-          image: "/projects/agricole-certificate.jpg",
+          image: "/projects/agricom-logo.png",
+          mediaContain: true,
           links: [
             {
               label: "Watch scenario",
               href: "https://youtube.com/watch?v=PdE9L7UQRMg&feature=share&fbclid=IwY2xjawRCXsdleHRuA2FlbQIxMQBzcnRjBmFwcF9pZBAyMjIwMzkxNzg4MjAwODkyAAEenNBgWUydAF1NfY6YFRvfBHnXjSQXqN1tpuw9i22bgtEBeHIdTuXM2PxGtp4_aem_Z-oNaPVL8eE0ancQYiJR5w"
-            },
-            { label: "Award proof", href: "/projects/agricole-attestation.pdf" }
+            }
+          ],
+          proofsLabel: "Award proof",
+          proofLinks: [
+            { label: "Certificate of excellence", href: "/projects/agricole-certificate-proof.jpg" },
+            { label: "Participation attestation", href: "/projects/agricole-attestation-proof.jpg" }
           ]
         },
         {
